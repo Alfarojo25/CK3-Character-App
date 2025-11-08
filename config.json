@@ -1,0 +1,18 @@
+{
+  "language": "en",
+  "database_directory": "databases",
+  "last_database": "default",
+  "last_gallery": null,
+  "window_geometry": "1600x900",
+  "theme": "dark",
+  "auto_backup_enabled": true,
+  "auto_backup_interval": "10min",
+  "auto_backup_max_count": 10,
+  "show_welcome": false,
+  "recent_databases": [],
+  "max_recent": 5,
+  "sort_by": "name",
+  "sort_order": "asc",
+  "auto_backup": true,
+  "backup_interval_days": 7
+}

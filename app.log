@@ -1,0 +1,153 @@
+2025-11-07 20:58:41 - root - INFO - ==================================================
+2025-11-07 20:58:41 - root - INFO - Application started at 2025-11-07 20:58:41
+2025-11-07 20:58:41 - root - INFO - ==================================================
+2025-11-07 20:58:42 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 20:58:42 - root - INFO - No config file found, creating default
+2025-11-07 20:58:42 - root - ERROR - Error loading en.json: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
+2025-11-07 20:58:42 - root - ERROR - Error loading es.json: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
+2025-11-07 20:58:42 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 20:59:26 - root - INFO - ==================================================
+2025-11-07 20:59:26 - root - INFO - Application started at 2025-11-07 20:59:26
+2025-11-07 20:59:26 - root - INFO - ==================================================
+2025-11-07 20:59:27 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 20:59:27 - root - INFO - No config file found, creating default
+2025-11-07 20:59:27 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 20:59:57 - root - INFO - ==================================================
+2025-11-07 20:59:57 - root - INFO - Application started at 2025-11-07 20:59:57
+2025-11-07 20:59:57 - root - INFO - ==================================================
+2025-11-07 20:59:57 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 20:59:57 - root - INFO - No config file found, creating default
+2025-11-07 20:59:57 - ui.main_window - WARNING - Language en not available, using default
+2025-11-07 20:59:57 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:00:37 - root - INFO - ==================================================
+2025-11-07 21:00:37 - root - INFO - Application started at 2025-11-07 21:00:37
+2025-11-07 21:00:37 - root - INFO - ==================================================
+2025-11-07 21:00:37 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:00:37 - root - INFO - No config file found, creating default
+2025-11-07 21:00:37 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:00:37 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:00:56 - ui.main_window - WARNING - User cancelled welcome dialog, using defaults
+2025-11-07 21:00:56 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:03:17 - root - INFO - ==================================================
+2025-11-07 21:03:17 - root - INFO - Application started at 2025-11-07 21:03:17
+2025-11-07 21:03:17 - root - INFO - ==================================================
+2025-11-07 21:03:17 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:03:17 - root - INFO - No config file found, creating default
+2025-11-07 21:03:17 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:03:17 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:03:28 - ui.main_window - WARNING - User cancelled welcome dialog, using defaults
+2025-11-07 21:03:28 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:08:08 - root - INFO - ==================================================
+2025-11-07 21:08:08 - root - INFO - Application started at 2025-11-07 21:08:08
+2025-11-07 21:08:08 - root - INFO - ==================================================
+2025-11-07 21:08:08 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:08:08 - root - INFO - No config file found, creating default
+2025-11-07 21:08:08 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:08:08 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:09:39 - root - INFO - ==================================================
+2025-11-07 21:09:39 - root - INFO - Application started at 2025-11-07 21:09:39
+2025-11-07 21:09:39 - root - INFO - ==================================================
+2025-11-07 21:09:39 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:09:39 - root - INFO - No config file found, creating default
+2025-11-07 21:09:39 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:09:39 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:09:44 - ui.main_window - WARNING - User cancelled welcome dialog, using defaults
+2025-11-07 21:09:54 - ui.main_window - INFO - Using database directory: C:/Users/edubl/OneDrive/Documents
+2025-11-07 21:09:58 - ui.main_window - WARNING - User cancelled welcome dialog, using defaults
+2025-11-07 21:09:58 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:11:53 - root - INFO - ==================================================
+2025-11-07 21:11:53 - root - INFO - Application started at 2025-11-07 21:11:53
+2025-11-07 21:11:53 - root - INFO - ==================================================
+2025-11-07 21:11:54 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:11:54 - root - INFO - No config file found, creating default
+2025-11-07 21:11:54 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:11:54 - ui.main_window - INFO - First run detected, showing welcome dialog
+2025-11-07 21:11:57 - ui.main_window - WARNING - User cancelled welcome dialog, using defaults
+2025-11-07 21:11:59 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:12:03 - ui.main_window - INFO - Language changed to: es
+2025-11-07 21:13:46 - root - INFO - ==================================================
+2025-11-07 21:13:46 - root - INFO - Application started at 2025-11-07 21:13:46
+2025-11-07 21:13:46 - root - INFO - ==================================================
+2025-11-07 21:13:46 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:13:47 - ui.main_window - INFO - Language set to: es
+2025-11-07 21:13:47 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:15:16 - root - INFO - ==================================================
+2025-11-07 21:15:16 - root - INFO - Application started at 2025-11-07 21:15:16
+2025-11-07 21:15:16 - root - INFO - ==================================================
+2025-11-07 21:15:17 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:15:17 - ui.main_window - INFO - Language set to: es
+2025-11-07 21:15:17 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:15:23 - ui.main_window - INFO - Language changed to: en
+2025-11-07 21:15:24 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:15:24 - root - INFO - ==================================================
+2025-11-07 21:15:24 - root - INFO - Application started at 2025-11-07 21:15:24
+2025-11-07 21:15:24 - root - INFO - ==================================================
+2025-11-07 21:15:24 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:15:24 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:15:24 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:15:27 - ui.main_window - INFO - Language changed to: es
+2025-11-07 21:15:28 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:15:28 - root - INFO - ==================================================
+2025-11-07 21:15:28 - root - INFO - Application started at 2025-11-07 21:15:28
+2025-11-07 21:15:28 - root - INFO - ==================================================
+2025-11-07 21:15:28 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:15:28 - ui.main_window - INFO - Language set to: es
+2025-11-07 21:15:28 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:34:04 - root - INFO - ==================================================
+2025-11-07 21:34:04 - root - INFO - Application started at 2025-11-07 21:34:04
+2025-11-07 21:34:04 - root - INFO - ==================================================
+2025-11-07 21:34:05 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:34:05 - ui.main_window - INFO - Language set to: es
+2025-11-07 21:34:05 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:34:10 - ui.main_window - INFO - Language changed to: en
+2025-11-07 21:34:11 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:34:12 - root - INFO - ==================================================
+2025-11-07 21:34:12 - root - INFO - Application started at 2025-11-07 21:34:12
+2025-11-07 21:34:12 - root - INFO - ==================================================
+2025-11-07 21:34:12 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:34:12 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:34:12 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:34:16 - ui.main_window - INFO - Language changed to: es
+2025-11-07 21:34:19 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:34:19 - root - INFO - ==================================================
+2025-11-07 21:34:19 - root - INFO - Application started at 2025-11-07 21:34:19
+2025-11-07 21:34:19 - root - INFO - ==================================================
+2025-11-07 21:34:19 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:34:19 - ui.main_window - INFO - Language set to: es
+2025-11-07 21:34:19 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:58:10 - root - INFO - ==================================================
+2025-11-07 21:58:10 - root - INFO - Application started at 2025-11-07 21:58:10
+2025-11-07 21:58:10 - root - INFO - ==================================================
+2025-11-07 21:58:10 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:58:10 - ui.main_window - INFO - Theme set to: dark
+2025-11-07 21:58:10 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:58:10 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:58:10 - utils.auto_backup - INFO - AutoBackupManager initialized: interval=10min, max_backups=10
+2025-11-07 21:58:10 - utils.auto_backup - INFO - Auto backup started with 10min interval
+2025-11-07 21:58:10 - ui.main_window - INFO - Auto backup started
+2025-11-07 21:58:29 - ui.main_window - INFO - Theme changed to: light
+2025-11-07 21:58:30 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:58:31 - root - INFO - ==================================================
+2025-11-07 21:58:31 - root - INFO - Application started at 2025-11-07 21:58:31
+2025-11-07 21:58:31 - root - INFO - ==================================================
+2025-11-07 21:58:32 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:58:32 - ui.main_window - INFO - Theme set to: light
+2025-11-07 21:58:32 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:58:32 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:58:32 - utils.auto_backup - INFO - AutoBackupManager initialized: interval=10min, max_backups=10
+2025-11-07 21:58:32 - utils.auto_backup - INFO - Auto backup started with 10min interval
+2025-11-07 21:58:32 - ui.main_window - INFO - Auto backup started
+2025-11-07 21:58:36 - ui.main_window - INFO - Theme changed to: dark
+2025-11-07 21:58:37 - ui.main_window - INFO - Restarting application...
+2025-11-07 21:58:38 - root - INFO - ==================================================
+2025-11-07 21:58:38 - root - INFO - Application started at 2025-11-07 21:58:38
+2025-11-07 21:58:38 - root - INFO - ==================================================
+2025-11-07 21:58:38 - ui.main_window - INFO - Initializing CK3 Character Manager
+2025-11-07 21:58:38 - ui.main_window - INFO - Theme set to: dark
+2025-11-07 21:58:38 - ui.main_window - INFO - Language set to: en
+2025-11-07 21:58:38 - ui.main_window - INFO - Using database directory: databases
+2025-11-07 21:58:38 - utils.auto_backup - INFO - AutoBackupManager initialized: interval=10min, max_backups=10
+2025-11-07 21:58:38 - utils.auto_backup - INFO - Auto backup started with 10min interval
+2025-11-07 21:58:38 - ui.main_window - INFO - Auto backup started
+2025-11-07 21:58:53 - utils.auto_backup - INFO - Auto backup stopped
+2025-11-07 21:58:53 - ui.main_window - INFO - Auto backup stopped

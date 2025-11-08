@@ -1,0 +1,12 @@
+{
+  "current_character_db": "default",
+  "current_coa_db": "default",
+  "databases": {
+    "default": {
+      "name": "default",
+      "type": "both",
+      "created": "2025-11-07T20:42:02.940955",
+      "description": "Default database"
+    }
+  }
+}
