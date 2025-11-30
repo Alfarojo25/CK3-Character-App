@@ -83,10 +83,22 @@ class CK3CharacterApp(tk.Tk):
         
         logger.info(f"Using database directory: {db_dir}")
         
-        # Initialize managers
+        # Initialize database manager first
         self.db_manager = DatabaseManager(base_dir=db_dir)
-        self.gallery_manager = GalleryManager(base_dir=db_dir)
-        self.coa_manager = CoAManager(base_dir=db_dir)
+        
+        # Get current database name from config or use db_manager's current
+        db_name = self.app_config.get("current_database_name")
+        if not db_name:
+            # Fallback to db_manager's current database
+            db_name = self.db_manager.get_current_database("character")
+        
+        # Initialize managers with current database name
+        self.current_db_name = db_name
+        self.gallery_manager = GalleryManager(base_dir=db_dir, db_name=db_name)
+        self.coa_manager = CoAManager(base_dir=db_dir, db_name=db_name)
+        
+        # Save current database name to config
+        self.app_config.set("current_database_name", db_name)
         
         # Initialize auto backup manager
         backup_dir = os.path.join(db_dir, "backups")
@@ -94,11 +106,15 @@ class CK3CharacterApp(tk.Tk):
         auto_backup_interval = self.app_config.get("auto_backup_interval", "10min")
         auto_backup_max = self.app_config.get("auto_backup_max_count", 10)
         
+        # Backup the entire database folder (Database_Default) which contains both character_data and coa_data
+        backup_source_dir = self.gallery_manager.db_folder
+        
         self.auto_backup_manager = AutoBackupManager(
-            db_directory=db_dir,
+            db_directory=backup_source_dir,
             backup_directory=backup_dir,
             interval=auto_backup_interval if auto_backup_enabled else "disabled",
-            max_backups=auto_backup_max
+            max_backups=auto_backup_max,
+            db_name=db_name
         )
         
         # Start auto backup if enabled
@@ -122,6 +138,10 @@ class CK3CharacterApp(tk.Tk):
         
         # Setup UI
         self.setup_ui()
+        
+        # Update window title with active database
+        mode_name = "Character" if self.current_mode == "character" else "CoA"
+        self.title(f"CK3 Manager - {mode_name} - Database: {self.current_db_name}")
         
         # Load first gallery
         galleries = self.gallery_manager.get_gallery_names()
@@ -382,9 +402,14 @@ class CK3CharacterApp(tk.Tk):
         
         # Row 2
         btn_row2 = tk.Frame(btn_grid, bg="#3a3a3a")
-        btn_row2.pack(fill="x")
+        btn_row2.pack(fill="x", pady=(0, 5))
         ttk.Button(btn_row2, text=f"✏️ {self.i18n.t('edit')}", command=self.edit_character, width=10).pack(side="left", fill="x", expand=True, padx=(0, 5))
         ttk.Button(btn_row2, text=f"🗑️ {self.i18n.t('delete')}", command=self.delete_character, width=10).pack(side="left", fill="x", expand=True)
+        
+        # Row 3 - Refresh button
+        btn_row3 = tk.Frame(btn_grid, bg="#3a3a3a")
+        btn_row3.pack(fill="x")
+        ttk.Button(btn_row3, text=f"🔄 {self.i18n.t('refresh')}", command=self.refresh_current_view).pack(fill="x", expand=True)
     
     def setup_middle_panel(self, parent):
         """Setup middle panel with portrait and tags."""
@@ -962,9 +987,28 @@ class CK3CharacterApp(tk.Tk):
         
         if cropper.result:
             char_id = self.current_character.get("id")
-            dest_path = os.path.join(self.gallery_manager.images_dir, f"{char_id}.png")
+            char_name = self.current_character.get("name", "")
+            
+            # Use character name for filename
+            safe_name = self.gallery_manager._sanitize_filename(char_name) or char_id
+            base_name = safe_name
+            counter = 1
+            dest_path = os.path.join(self.gallery_manager.images_dir, f"{base_name}.png")
+            
+            # If file exists and is not the current character's image, append counter
+            old_image = self.current_character.get("image")
+            while os.path.exists(dest_path) and dest_path != old_image:
+                dest_path = os.path.join(self.gallery_manager.images_dir, f"{base_name}_{counter}.png")
+                counter += 1
             
             if crop_image(image_path, dest_path, cropper.result, (450, 450)):
+                # Remove old image if different
+                if old_image and os.path.exists(old_image) and old_image != dest_path:
+                    try:
+                        os.remove(old_image)
+                    except OSError:
+                        pass
+                
                 self.current_character["image"] = dest_path
                 self.gallery_manager.save_galleries()
                 self.load_character(self.current_character)
@@ -1051,15 +1095,50 @@ class CK3CharacterApp(tk.Tk):
         if dialog.result and dialog.result != current_db:
             if self.db_manager.set_current_database(dialog.result, 
                                                      "character" if self.current_mode == "character" else "coa"):
-                # Reload the appropriate manager
-                if self.current_mode == "character":
-                    data_dir = self.db_manager.get_database_path(dialog.result, "character")
-                    self.gallery_manager = GalleryManager(data_dir)
-                else:
-                    data_dir = self.db_manager.get_database_path(dialog.result, "coa")
-                    self.coa_manager = CoAManager(data_dir)
+                # Update current database name
+                self.current_db_name = dialog.result
+                self.app_config.set("current_database_name", dialog.result)
                 
-                # Reload UI
+                # Reinitialize managers with new database
+                db_dir = self.app_config.get("database_directory", "databases")
+                self.gallery_manager = GalleryManager(base_dir=db_dir, db_name=dialog.result)
+                self.coa_manager = CoAManager(base_dir=db_dir, db_name=dialog.result)
+                
+                # Reinitialize auto backup manager with new database
+                backup_dir = os.path.join(db_dir, "backups")
+                auto_backup_enabled = self.app_config.get("auto_backup_enabled", True)
+                auto_backup_interval = self.app_config.get("auto_backup_interval", "10min")
+                auto_backup_max = self.app_config.get("auto_backup_max_count", 10)
+                
+                # Stop old backup manager
+                if hasattr(self, 'auto_backup_manager'):
+                    self.auto_backup_manager.stop()
+                
+                # Create new backup manager for new database
+                backup_source_dir = self.gallery_manager.db_folder
+                self.auto_backup_manager = AutoBackupManager(
+                    db_directory=backup_source_dir,
+                    backup_directory=backup_dir,
+                    interval=auto_backup_interval if auto_backup_enabled else "disabled",
+                    max_backups=auto_backup_max,
+                    db_name=dialog.result
+                )
+                
+                # Start auto backup if enabled
+                if auto_backup_enabled:
+                    self.auto_backup_manager.start()
+                
+                # Clear current view
+                self.char_listbox.delete(0, tk.END)
+                self.clear_character_display()
+                self.current_character = None
+                self.current_gallery_name = None
+                
+                # Update window title to show active database
+                mode_name = "Character" if self.current_mode == "character" else "CoA"
+                self.title(f"CK3 Manager - {mode_name} - Database: {dialog.result}")
+                
+                # Reload UI with new database
                 self.refresh_gallery_list()
                 messagebox.showinfo("Success", f"Switched to database '{dialog.result}'")
                 self.set_status(f"Active database: {dialog.result}")
@@ -1068,14 +1147,14 @@ class CK3CharacterApp(tk.Tk):
     
     def backup_database(self):
         """Backup the current database with file location selector."""
-        current_db = self.db_manager.get_current_database(
-            "character" if self.current_mode == "character" else "coa"
-        )
-        
         # Ask user to select backup location
         from datetime import datetime
+        import zipfile
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        default_filename = f"{current_db}_backup_{timestamp}.zip"
+        db_name = self.current_db_name
+        # New format: Database_YYYYMMDD_HHMMSS_CK3_Character_App_NombreDB.zip
+        default_filename = f"Database_{timestamp}_CK3_Character_App_{db_name}.zip"
         
         backup_path = filedialog.asksaveasfilename(
             title="Select Backup Location",
@@ -1085,24 +1164,37 @@ class CK3CharacterApp(tk.Tk):
         )
         
         if backup_path:
-            # Create temporary backup
-            temp_backup = self.db_manager.backup_database(current_db)
-            if temp_backup:
-                try:
-                    # Move to user-selected location
-                    import shutil
-                    shutil.move(temp_backup, backup_path)
-                    messagebox.showinfo("Success", f"Backup created:\n{backup_path}")
-                    self.set_status(f"Backup created: {current_db}")
-                except Exception as e:
-                    messagebox.showerror("Error", f"Failed to save backup:\n{str(e)}")
-            else:
-                messagebox.showerror("Error", "Failed to create backup.")
+            try:
+                # Backup the entire database folder (Database_Default)
+                source_dir = self.gallery_manager.db_folder  # databases/Database_Default
+                
+                # Folder name inside the ZIP (same as filename without .zip)
+                zip_folder_name = os.path.basename(backup_path).replace(".zip", "")
+                
+                # Create zip file
+                with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for root, dirs, files in os.walk(source_dir):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            # Calculate relative path from source_dir
+                            arcname = os.path.relpath(file_path, source_dir)
+                            # Add to ZIP inside the folder structure
+                            zipf.write(file_path, os.path.join(zip_folder_name, arcname))
+                
+                backup_size = os.path.getsize(backup_path) / (1024 * 1024)  # MB
+                messagebox.showinfo("Success", f"Backup created:\n{backup_path}\n\nSize: {backup_size:.2f} MB")
+                self.set_status(f"Backup created successfully")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to create backup:\n{str(e)}")
     
     def manage_databases(self):
         """Open database management dialog."""
         dialog = DatabaseInfoDialog(self, self.db_manager, self.on_database_deleted)
         self.wait_window(dialog)
+        
+        # Check if user selected a database to switch to
+        if dialog.result:
+            self.switch_database(dialog.result)
     
     def on_database_deleted(self):
         """Callback when a database is deleted."""
@@ -1169,9 +1261,9 @@ class CK3CharacterApp(tk.Tk):
         
         self.current_mode = mode
         
-        # Update title
+        # Update title with database name
         mode_name = "Characters" if mode == "character" else "Coats of Arms"
-        self.title(f"CK3 Manager - {mode_name}")
+        self.title(f"CK3 Manager - {mode_name} - Database: {self.current_db_name}")
         
         # Hide/Show DNA panel
         if mode == "coa":
@@ -1202,6 +1294,60 @@ class CK3CharacterApp(tk.Tk):
         else:
             self.char_listbox.delete(0, tk.END)
             self.clear_character_data()
+    
+    def refresh_current_view(self):
+        """Refresh the current gallery view and reload data from database."""
+        # Reload data from disk based on current mode
+        if self.current_mode == "character":
+            self.gallery_manager.reload_from_disk()
+            # Rename images to match character names
+            self._update_image_names()
+        else:
+            self.coa_manager.reload_from_disk()
+        
+        # Refresh the view
+        if self.current_gallery_name:
+            self.load_gallery(self.current_gallery_name)
+            self.set_status(self.i18n.t("view_refreshed"))
+        else:
+            self.refresh_gallery_list()
+            self.set_status(self.i18n.t("view_refreshed"))
+    
+    def _update_image_names(self):
+        """Update image filenames to match character names."""
+        try:
+            for gallery in self.gallery_manager.galleries:
+                for char in gallery.get("characters", []):
+                    old_image = char.get("image")
+                    if old_image and os.path.exists(old_image):
+                        # Check if image has UUID name
+                        old_filename = os.path.basename(old_image)
+                        if len(old_filename) == 40:  # UUID format (36 chars + .png = 40)
+                            # Generate new name based on character name
+                            char_name = char.get("name", "")
+                            if char_name:
+                                safe_name = self.gallery_manager._sanitize_filename(char_name)
+                                base_name = safe_name
+                                counter = 1
+                                new_image_path = os.path.join(self.gallery_manager.images_dir, f"{base_name}.png")
+                                
+                                # Find available filename
+                                while os.path.exists(new_image_path) and new_image_path != old_image:
+                                    new_image_path = os.path.join(self.gallery_manager.images_dir, f"{base_name}_{counter}.png")
+                                    counter += 1
+                                
+                                # Rename file
+                                if new_image_path != old_image:
+                                    try:
+                                        os.rename(old_image, new_image_path)
+                                        char["image"] = new_image_path
+                                    except OSError as e:
+                                        logger.warning(f"Failed to rename {old_image}: {e}")
+            
+            # Save updated galleries
+            self.gallery_manager.save_galleries()
+        except Exception as e:
+            logger.error(f"Error updating image names: {e}")
     
     def edit_character(self):
         """Edit the currently selected character/CoA."""

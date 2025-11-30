@@ -1,12 +1,18 @@
 {
-  "current_character_db": "default",
-  "current_coa_db": "default",
+  "current_character_db": "Default",
+  "current_coa_db": "Default",
   "databases": {
-    "default": {
-      "name": "default",
+    "Default": {
+      "name": "Default",
       "type": "both",
       "created": "2025-11-07T20:42:02.940955",
       "description": "Default database"
+    },
+    "MiBaseDatos": {
+      "name": "MiBaseDatos",
+      "type": "character",
+      "created": "2025-11-29T20:34:03.210908",
+      "description": "Database MiBaseDatos"
     }
   }
 }

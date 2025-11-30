@@ -23,12 +23,13 @@ class ConfigManager:
         "language": "en",
         "database_directory": _default_db_dir,
         "last_database": "default",
+        "current_database_name": "Default",  # Current active database name
         "last_gallery": None,
         "window_geometry": "1600x900",
         "theme": "dark",
         "auto_backup_enabled": True,
         "auto_backup_interval": "10min",  # "disabled", "1min", "5min", "10min", "30min"
-        "auto_backup_max_count": 10,
+        "auto_backup_max_count": 1,
         "show_welcome": True,
         "recent_databases": [],
         "max_recent": 5,

@@ -6,46 +6,69 @@ Manages CK3 coat of arms without DNA duplication functionality.
 import json
 import os
 import re
-from typing import Dict, List, Optional
+import time
+import uuid
+from typing import Dict, List, Optional, Any
 from PIL import Image
 
 
 class CoAManager:
     """Manages coat of arms galleries and data."""
     
-    def __init__(self, data_dir: str = "coa_data", base_dir: str = "databases"):
+    def __init__(self, data_dir: str = "coa_data", base_dir: str = "databases", db_name: str = "Default"):
         """
         Initialize CoA manager.
         
         Args:
-            data_dir: Directory for CoA data storage (relative to base_dir)
+            data_dir: Directory for CoA data storage (relative to database folder)
             base_dir: Base directory for all databases
+            db_name: Database name
         """
         self.base_dir = base_dir
-        self.data_dir = os.path.join(base_dir, "default", data_dir)
-        self.images_dir = os.path.join(base_dir, "default", "coa_images")
-        self._ensure_directories()
-        self.current_gallery = "default_coa"
-        self._ensure_default_gallery()
-    
-    def _ensure_directories(self):
-        """Ensure data directories exist."""
+        self.db_name = db_name
+        self.db_folder = os.path.join(base_dir, f"Database_{db_name}")
+        self.data_dir = os.path.join(self.db_folder, data_dir)
+        self.data_file = os.path.join(self.data_dir, "coats_of_arms.json")
+        self.images_dir = os.path.join(self.data_dir, "images")
+        
+        # Create directories if they don't exist
         os.makedirs(self.data_dir, exist_ok=True)
         os.makedirs(self.images_dir, exist_ok=True)
+        
+        # Load or initialize galleries
+        self.galleries = self._load_galleries()
+        self.current_gallery = "Default"
     
-    def _ensure_default_gallery(self):
-        """Ensure default gallery exists."""
-        gallery_file = os.path.join(self.data_dir, f"{self.current_gallery}.json")
-        if not os.path.exists(gallery_file):
-            self.create_gallery("default_coa", "Default CoA Gallery")
+    def _load_galleries(self) -> List[Dict[str, Any]]:
+        """Load galleries from JSON file or create default."""
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r', encoding='utf-8-sig') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, IOError):
+                return [{"name": "Default", "coats_of_arms": []}]
+        else:
+            return [{"name": "Default", "coats_of_arms": []}]
     
-    def get_gallery_file(self, gallery_name: str) -> str:
-        """Get path to gallery file."""
-        return os.path.join(self.data_dir, f"{gallery_name}.json")
+    def save_galleries(self) -> None:
+        """Save galleries to JSON file."""
+        with open(self.data_file, 'w', encoding='utf-8') as f:
+            json.dump(self.galleries, f, indent=2, ensure_ascii=False)
     
-    def get_image_file(self, coa_id: str) -> str:
-        """Get path to CoA image file."""
-        return os.path.join(self.images_dir, f"{coa_id}.png")
+    def reload_from_disk(self) -> None:
+        """Reload galleries data from disk."""
+        self.galleries = self._load_galleries()
+    
+    def get_gallery_names(self) -> List[str]:
+        """Get list of all gallery names."""
+        return [g["name"] for g in self.galleries]
+    
+    def get_gallery(self, name: str) -> Optional[Dict[str, Any]]:
+        """Get a gallery by name."""
+        for gallery in self.galleries:
+            if gallery["name"] == name:
+                return gallery
+        return None
     
     def create_gallery(self, name: str, description: str = "") -> bool:
         """
@@ -58,72 +81,31 @@ class CoAManager:
         Returns:
             True if created successfully
         """
-        gallery_file = self.get_gallery_file(name)
-        if os.path.exists(gallery_file):
+        if any(g["name"] == name for g in self.galleries):
             return False
         
-        gallery_data = {
+        self.galleries.append({
             "name": name,
             "description": description,
-            "coats_of_arms": []
-        }
-        
-        with open(gallery_file, 'w', encoding='utf-8') as f:
-            json.dump(gallery_data, f, indent=2, ensure_ascii=False)
-        
+            "coats_of_arms": [],
+            "created": time.time(),
+            "modified": time.time()
+        })
+        self.save_galleries()
         return True
-    
-    def get_gallery_names(self) -> List[str]:
-        """
-        Get list of all gallery names.
-        
-        Returns:
-            List of gallery names
-        """
-        if not os.path.exists(self.data_dir):
-            return []
-        
-        galleries = []
-        for file in os.listdir(self.data_dir):
-            if file.endswith('.json'):
-                galleries.append(file[:-5])
-        
-        return sorted(galleries)
     
     def load_gallery(self, name: str) -> Optional[Dict]:
-        """
-        Load a gallery.
-        
-        Args:
-            name: Gallery name
-            
-        Returns:
-            Gallery data dictionary or None if not found
-        """
-        gallery_file = self.get_gallery_file(name)
-        if not os.path.exists(gallery_file):
-            return None
-        
-        with open(gallery_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        """Load a gallery by name."""
+        return self.get_gallery(name)
     
     def save_gallery(self, name: str, gallery_data: Dict) -> bool:
-        """
-        Save gallery data.
-        
-        Args:
-            name: Gallery name
-            gallery_data: Gallery data dictionary
-            
-        Returns:
-            True if saved successfully
-        """
-        gallery_file = self.get_gallery_file(name)
-        
-        with open(gallery_file, 'w', encoding='utf-8') as f:
-            json.dump(gallery_data, f, indent=2, ensure_ascii=False)
-        
+        """Save gallery data (compatibility method)."""
+        self.save_galleries()
         return True
+    
+    def get_image_file(self, coa_id: str) -> str:
+        """Get path to CoA image file."""
+        return os.path.join(self.images_dir, f"{coa_id}.png")
     
     def add_coa(self, gallery_name: str, coa_id: str, coa_code: str, 
                 tags: List[str] = None, image_path: str = None) -> bool:
@@ -140,8 +122,8 @@ class CoAManager:
         Returns:
             True if added successfully
         """
-        gallery = self.load_gallery(gallery_name)
-        if gallery is None:
+        gallery = self.get_gallery(gallery_name)
+        if not gallery:
             return False
         
         # Check if CoA already exists
@@ -153,7 +135,9 @@ class CoAManager:
             "id": coa_id,
             "code": coa_code,
             "tags": tags or [],
-            "has_image": False
+            "has_image": False,
+            "created": time.time(),
+            "modified": time.time()
         }
         
         # Copy image if provided
@@ -166,7 +150,9 @@ class CoAManager:
                 pass
         
         gallery["coats_of_arms"].append(coa_data)
-        return self.save_gallery(gallery_name, gallery)
+        gallery["modified"] = time.time()
+        self.save_galleries()
+        return True
     
     def update_coa(self, gallery_name: str, coa_id: str, coa_code: str = None,
                    tags: List[str] = None, image_path: str = None) -> bool:
@@ -383,7 +369,7 @@ class CoAManager:
             Gallery name if imported successfully, None otherwise
         """
         try:
-            with open(import_path, 'r', encoding='utf-8') as f:
+            with open(import_path, 'r', encoding='utf-8-sig') as f:
                 gallery = json.load(f)
             
             name = gallery.get("name", "imported_coa")

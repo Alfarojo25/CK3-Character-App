@@ -8,23 +8,41 @@ import os
 import shutil
 import uuid
 import time
+import re
 from typing import List, Dict, Optional, Any
 
 
 class GalleryManager:
     """Manages character galleries and their persistence."""
     
-    def __init__(self, data_dir: str = "character_data", base_dir: str = "databases"):
+    @staticmethod
+    def _sanitize_filename(name: str) -> str:
+        """Sanitize a character name to be used as a filename."""
+        # Replace problematic characters with underscores
+        sanitized = re.sub(r'[<>:"/\\|?*]', '_', name)
+        # Replace spaces with underscores
+        sanitized = sanitized.replace(' ', '_')
+        # Remove leading/trailing spaces and dots
+        sanitized = sanitized.strip('. ')
+        # Limit length to 100 characters
+        sanitized = sanitized[:100]
+        # If empty after sanitization, use 'character'
+        return sanitized if sanitized else 'character'
+    
+    def __init__(self, data_dir: str = "character_data", base_dir: str = "databases", db_name: str = "Default"):
         """
         Initialize the gallery manager.
         
         Args:
-            data_dir: Directory to store gallery data and images (relative to base_dir)
+            data_dir: Directory to store gallery data and images (relative to database folder)
             base_dir: Base directory for all databases
+            db_name: Database name
         """
         self.base_dir = base_dir
-        self.data_dir = os.path.join(base_dir, data_dir)
-        self.data_file = os.path.join(self.data_dir, "galleries.json")
+        self.db_name = db_name
+        self.db_folder = os.path.join(base_dir, f"Database_{db_name}")
+        self.data_dir = os.path.join(self.db_folder, data_dir)
+        self.data_file = os.path.join(self.data_dir, "characters.json")
         self.images_dir = os.path.join(self.data_dir, "images")
         
         # Create directories if they don't exist
@@ -38,7 +56,7 @@ class GalleryManager:
         """Load galleries from JSON file or create default."""
         if os.path.exists(self.data_file):
             try:
-                with open(self.data_file, 'r', encoding='utf-8') as f:
+                with open(self.data_file, 'r', encoding='utf-8-sig') as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 return [{"name": "Default", "characters": []}]
@@ -49,6 +67,10 @@ class GalleryManager:
         """Save galleries to JSON file."""
         with open(self.data_file, 'w', encoding='utf-8') as f:
             json.dump(self.galleries, f, indent=2, ensure_ascii=False)
+    
+    def reload_from_disk(self) -> None:
+        """Reload galleries data from disk."""
+        self.galleries = self._load_galleries()
     
     def get_gallery_names(self) -> List[str]:
         """Get list of all gallery names."""
@@ -150,7 +172,17 @@ class GalleryManager:
         
         # Copy image if provided
         if image_path and os.path.exists(image_path):
-            dest_path = os.path.join(self.images_dir, f"{char_id}.png")
+            # Use character name for filename, with UUID as fallback
+            safe_name = self._sanitize_filename(name) or char_id
+            base_name = safe_name
+            counter = 1
+            dest_path = os.path.join(self.images_dir, f"{base_name}.png")
+            
+            # If file exists, append counter
+            while os.path.exists(dest_path) and dest_path != image_path:
+                dest_path = os.path.join(self.images_dir, f"{base_name}_{counter}.png")
+                counter += 1
+            
             try:
                 shutil.copy2(image_path, dest_path)
                 character['image'] = dest_path
@@ -172,6 +204,28 @@ class GalleryManager:
         
         for char in gallery["characters"]:
             if char["id"] == char_id:
+                # If name is changing and character has an image, rename the image file
+                if name is not None and name != char.get("name") and char.get("image"):
+                    old_image = char["image"]
+                    if os.path.exists(old_image):
+                        safe_name = self._sanitize_filename(name) or char_id
+                        base_name = safe_name
+                        counter = 1
+                        new_image = os.path.join(self.images_dir, f"{base_name}.png")
+                        
+                        # Find available filename
+                        while os.path.exists(new_image) and new_image != old_image:
+                            new_image = os.path.join(self.images_dir, f"{base_name}_{counter}.png")
+                            counter += 1
+                        
+                        # Rename the image file
+                        if new_image != old_image:
+                            try:
+                                os.rename(old_image, new_image)
+                                char["image"] = new_image
+                            except OSError:
+                                pass  # Keep old image path if rename fails
+                
                 if name is not None:
                     char["name"] = name
                 if dna is not None:
@@ -214,8 +268,26 @@ class GalleryManager:
         
         for char in gallery["characters"]:
             if char["id"] == char_id:
-                dest_path = os.path.join(self.images_dir, f"{char_id}.png")
+                # Use character name for filename
+                safe_name = self._sanitize_filename(char.get('name', '')) or char_id
+                base_name = safe_name
+                counter = 1
+                dest_path = os.path.join(self.images_dir, f"{base_name}.png")
+                
+                # If file exists and is not the current character's image, append counter
+                while os.path.exists(dest_path) and dest_path != char.get('image') and dest_path != image_path:
+                    dest_path = os.path.join(self.images_dir, f"{base_name}_{counter}.png")
+                    counter += 1
+                
                 try:
+                    # Remove old image if it exists and is different
+                    old_image = char.get('image')
+                    if old_image and os.path.exists(old_image) and old_image != dest_path:
+                        try:
+                            os.remove(old_image)
+                        except OSError:
+                            pass
+                    
                     shutil.copy2(image_path, dest_path)
                     char["image"] = dest_path
                     char["modified"] = time.time()

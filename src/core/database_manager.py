@@ -30,25 +30,96 @@ class DatabaseManager:
         os.makedirs(self.base_dir, exist_ok=True)
         os.makedirs(os.path.join(self.base_dir, "backups"), exist_ok=True)
     
+    def scan_databases(self) -> List[str]:
+        """Scan for all Database_* folders in base directory.
+        
+        Returns:
+            List of database names (without Database_ prefix)
+        """
+        databases = []
+        if os.path.exists(self.base_dir):
+            for item in os.listdir(self.base_dir):
+                if item.startswith("Database_"):
+                    item_path = os.path.join(self.base_dir, item)
+                    if os.path.isdir(item_path):
+                        # Extract name without Database_ prefix
+                        db_name = item[9:]  # len("Database_") = 9
+                        
+                        # Skip backup folders (format: YYYYMMDD_HHMMSS_CK3_Character_App_*)
+                        # These start with a date pattern
+                        if len(db_name) > 8 and db_name[8] == '_' and db_name[:8].isdigit():
+                            continue
+                        
+                        databases.append(db_name)
+        return sorted(databases)
+    
     def _load_config(self):
-        """Load database configuration."""
+        """Load database configuration and sync with existing folders."""
         if os.path.exists(self.config_file):
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, 'r', encoding='utf-8-sig') as f:
                 self.config = json.load(f)
         else:
             self.config = {
-                "current_character_db": "default",
-                "current_coa_db": "default",
-                "databases": {
-                    "default": {
-                        "name": "default",
-                        "type": "both",  # both, character, coa
-                        "created": datetime.now().isoformat(),
-                        "description": "Default database"
-                    }
-                }
+                "current_character_db": "Default",
+                "current_coa_db": "Default",
+                "databases": {}
             }
-            self._save_config()
+        
+        # Scan for existing Database_* folders and add to config if not present
+        existing_dbs = self.scan_databases()
+        for db_name in existing_dbs:
+            if db_name not in self.config["databases"]:
+                # Auto-detect type based on folders
+                db_path = os.path.join(self.base_dir, f"Database_{db_name}")
+                has_character = os.path.exists(os.path.join(db_path, "character_data"))
+                has_coa = os.path.exists(os.path.join(db_path, "coa_data"))
+                
+                if has_character and has_coa:
+                    db_type = "both"
+                elif has_character:
+                    db_type = "character"
+                elif has_coa:
+                    db_type = "coa"
+                else:
+                    db_type = "both"
+                
+                self.config["databases"][db_name] = {
+                    "name": db_name,
+                    "type": db_type,
+                    "created": datetime.now().isoformat(),
+                    "description": f"Database {db_name}"
+                }
+        
+        # Remove databases from config that don't have folders or are backups
+        config_dbs = list(self.config["databases"].keys())
+        for db_name in config_dbs:
+            # Skip backup entries (format: YYYYMMDD_HHMMSS_CK3_Character_App_*)
+            if len(db_name) > 8 and db_name[8] == '_' and db_name[:8].isdigit():
+                del self.config["databases"][db_name]
+                continue
+            
+            db_path = os.path.join(self.base_dir, f"Database_{db_name}")
+            if not os.path.exists(db_path):
+                del self.config["databases"][db_name]
+        
+        # Ensure Default exists
+        if "Default" not in self.config["databases"]:
+            self.config["databases"]["Default"] = {
+                "name": "Default",
+                "type": "both",
+                "created": datetime.now().isoformat(),
+                "description": "Default database"
+            }
+            # Create Default folder if it doesn't exist
+            self.create_database("Default", "both", "Default database")
+        
+        # Ensure current databases are valid
+        if self.config.get("current_character_db") not in self.config["databases"]:
+            self.config["current_character_db"] = "Default"
+        if self.config.get("current_coa_db") not in self.config["databases"]:
+            self.config["current_coa_db"] = "Default"
+        
+        self._save_config()
     
     def _save_config(self):
         """Save database configuration."""
@@ -95,17 +166,17 @@ class DatabaseManager:
         }
         self._save_config()
         
-        # Create database directory structure
-        db_path = os.path.join(self.base_dir, name)
+        # Create database directory structure with Database_ prefix
+        db_path = os.path.join(self.base_dir, f"Database_{name}")
         os.makedirs(db_path, exist_ok=True)
         
         if db_type in ["both", "character"]:
             os.makedirs(os.path.join(db_path, "character_data"), exist_ok=True)
-            os.makedirs(os.path.join(db_path, "portraits"), exist_ok=True)
+            os.makedirs(os.path.join(db_path, "character_data", "images"), exist_ok=True)
         
         if db_type in ["both", "coa"]:
             os.makedirs(os.path.join(db_path, "coa_data"), exist_ok=True)
-            os.makedirs(os.path.join(db_path, "coa_images"), exist_ok=True)
+            os.makedirs(os.path.join(db_path, "coa_data", "images"), exist_ok=True)
         
         return True
     
@@ -119,23 +190,23 @@ class DatabaseManager:
         Returns:
             True if deleted successfully
         """
-        if name not in self.config["databases"] or name == "default":
+        if name not in self.config["databases"] or name == "Default":
             return False
         
         # Remove from config
         del self.config["databases"][name]
         self._save_config()
         
-        # Remove directory
-        db_path = os.path.join(self.base_dir, name)
+        # Remove directory (with Database_ prefix)
+        db_path = os.path.join(self.base_dir, f"Database_{name}")
         if os.path.exists(db_path):
             shutil.rmtree(db_path)
         
         # Update current database if needed
         if self.config["current_character_db"] == name:
-            self.config["current_character_db"] = "default"
+            self.config["current_character_db"] = "Default"
         if self.config["current_coa_db"] == name:
-            self.config["current_coa_db"] = "default"
+            self.config["current_coa_db"] = "Default"
         self._save_config()
         
         return True
@@ -153,12 +224,13 @@ class DatabaseManager:
         if name not in self.config["databases"]:
             return None
         
-        db_path = os.path.join(self.base_dir, name)
+        db_path = os.path.join(self.base_dir, f"Database_{name}")
         if not os.path.exists(db_path):
             return None
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_name = f"{name}_backup_{timestamp}.zip"
+        # New format: Database_YYYYMMDD_HHMMSS_CK3_Character_App_NombreDB.zip
+        backup_name = f"Database_{timestamp}_CK3_Character_App_{name}.zip"
         backup_path = os.path.join(self.base_dir, "backups", backup_name)
         
         # Create zip archive
@@ -224,7 +296,7 @@ class DatabaseManager:
         Returns:
             Path to database directory
         """
-        base_path = os.path.join(self.base_dir, name)
+        base_path = os.path.join(self.base_dir, f"Database_{name}")
         
         if db_type == "character":
             return os.path.join(base_path, "character_data")
@@ -258,11 +330,11 @@ class DatabaseManager:
                 shutil.move(char_file, os.path.join(to_path, f"{item_id}.json"))
             
             # Move portrait
-            from_portraits = os.path.join(self.base_dir, from_db, "portraits")
-            to_portraits = os.path.join(self.base_dir, to_db, "portraits")
-            portrait_file = os.path.join(from_portraits, f"{item_id}.png")
+            from_images = os.path.join(self.base_dir, f"Database_{from_db}", "character_data", "images")
+            to_images = os.path.join(self.base_dir, f"Database_{to_db}", "character_data", "images")
+            portrait_file = os.path.join(from_images, f"{item_id}.png")
             if os.path.exists(portrait_file):
-                shutil.move(portrait_file, os.path.join(to_portraits, f"{item_id}.png"))
+                shutil.move(portrait_file, os.path.join(to_images, f"{item_id}.png"))
         
         # For CoAs, move data and images
         else:
@@ -270,8 +342,8 @@ class DatabaseManager:
             if os.path.exists(coa_file):
                 shutil.move(coa_file, os.path.join(to_path, f"{item_id}.json"))
             
-            from_images = os.path.join(self.base_dir, from_db, "coa_images")
-            to_images = os.path.join(self.base_dir, to_db, "coa_images")
+            from_images = os.path.join(self.base_dir, f"Database_{from_db}", "coa_data", "images")
+            to_images = os.path.join(self.base_dir, f"Database_{to_db}", "coa_data", "images")
             image_file = os.path.join(from_images, f"{item_id}.png")
             if os.path.exists(image_file):
                 shutil.move(image_file, os.path.join(to_images, f"{item_id}.png"))
@@ -293,16 +365,33 @@ class DatabaseManager:
         if name not in self.config["databases"]:
             return stats
         
-        db_path = os.path.join(self.base_dir, name)
+        db_path = os.path.join(self.base_dir, f"Database_{name}")
         
-        # Count characters
-        char_path = os.path.join(db_path, "character_data")
-        if os.path.exists(char_path):
-            stats["character_count"] = len([f for f in os.listdir(char_path) if f.endswith('.json')])
+        # Count characters from characters.json
+        char_file = os.path.join(db_path, "character_data", "characters.json")
+        if os.path.exists(char_file):
+            try:
+                with open(char_file, 'r', encoding='utf-8-sig') as f:
+                    data = json.load(f)
+                    # Count total characters across all galleries
+                    if isinstance(data, list):
+                        for gallery in data:
+                            if isinstance(gallery, dict) and "characters" in gallery:
+                                stats["character_count"] += len(gallery["characters"])
+            except:
+                pass
         
-        # Count CoAs
-        coa_path = os.path.join(db_path, "coa_data")
-        if os.path.exists(coa_path):
-            stats["coa_count"] = len([f for f in os.listdir(coa_path) if f.endswith('.json')])
+        # Count CoAs from coats_of_arms.json
+        coa_file = os.path.join(db_path, "coa_data", "coats_of_arms.json")
+        if os.path.exists(coa_file):
+            try:
+                with open(coa_file, 'r', encoding='utf-8-sig') as f:
+                    data = json.load(f)
+                    # Count total CoAs across all galleries
+                    for gallery_data in data.values():
+                        if isinstance(gallery_data, dict) and "coas" in gallery_data:
+                            stats["coa_count"] += len(gallery_data["coas"])
+            except:
+                pass
         
         return stats

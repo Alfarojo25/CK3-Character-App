@@ -3,6 +3,7 @@ Database Management Dialogs
 UI dialogs for managing databases, moving characters, and backups.
 """
 
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from typing import Optional, List, Callable
@@ -145,6 +146,14 @@ class SelectDatabaseDialog(tk.Toplevel):
         
         # Populate list
         for db in self.databases:
+            # Skip backups folder and backup entries (format: YYYYMMDD_HHMMSS_*)
+            db_name = db["name"]
+            if db_name.lower() == "backups" or "backup" in db_name.lower():
+                continue
+            # Skip backup database entries (date pattern at start)
+            if len(db_name) > 8 and db_name[8] == '_' and db_name[:8].isdigit():
+                continue
+            
             # Filter by type
             if self.db_type == "character" and db["type"] not in ["both", "character"]:
                 continue
@@ -167,11 +176,42 @@ class SelectDatabaseDialog(tk.Toplevel):
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill="x")
         
+        ttk.Button(btn_frame, text="Browse...", command=self.browse_folder).pack(side="left")
         ttk.Button(btn_frame, text="Select", command=self.on_select).pack(side="right", padx=(5, 0))
         ttk.Button(btn_frame, text="Cancel", command=self.destroy).pack(side="right")
         
         self.bind('<Return>', lambda e: self.on_select())
         self.bind('<Escape>', lambda e: self.destroy())
+    
+    def browse_folder(self):
+        """Browse for a database folder."""
+        folder = filedialog.askdirectory(
+            parent=self,
+            title="Select Database Folder",
+            mustexist=True
+        )
+        
+        if folder:
+            # Extract folder name from path
+            folder_name = os.path.basename(folder)
+            
+            # Check if it's the backups folder
+            if folder_name.lower() == "backups" or "backup" in folder_name.lower():
+                messagebox.showwarning(
+                    "Invalid Selection",
+                    "Cannot use the backups folder as a database.",
+                    parent=self
+                )
+                return
+            
+            # Extract database name from folder name (remove "Database_" prefix if present)
+            if folder_name.startswith("Database_"):
+                db_name = folder_name[9:]  # Remove "Database_" (9 characters)
+            else:
+                db_name = folder_name
+            
+            self.result = db_name
+            self.destroy()
     
     def on_select(self):
         """Handle select button."""
@@ -258,6 +298,14 @@ class MoveItemsDialog(tk.Toplevel):
         # Filter databases by type
         valid_databases = []
         for db in self.databases:
+            # Skip backups folder and backup entries (format: YYYYMMDD_HHMMSS_*)
+            db_name = db["name"]
+            if db_name.lower() == "backups" or "backup" in db_name.lower():
+                continue
+            # Skip backup database entries (date pattern at start)
+            if len(db_name) > 8 and db_name[8] == '_' and db_name[:8].isdigit():
+                continue
+            
             if db["name"] == self.current_db:
                 continue
             if self.item_type == "character" and db["type"] not in ["both", "character"]:
@@ -345,11 +393,13 @@ class MoveItemsDialog(tk.Toplevel):
 class DatabaseInfoDialog(tk.Toplevel):
     """Dialog showing database information and management options."""
     
-    def __init__(self, parent, db_manager, on_delete_callback: Callable = None):
+    def __init__(self, parent, db_manager, on_delete_callback: Callable = None, on_switch_callback: Callable = None):
         super().__init__(parent)
         
         self.db_manager = db_manager
         self.on_delete_callback = on_delete_callback
+        self.on_switch_callback = on_switch_callback
+        self.result = None
         
         self.title("Database Management")
         self.geometry("700x500")
@@ -399,6 +449,9 @@ class DatabaseInfoDialog(tk.Toplevel):
         self.tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
+        # Bind double-click to switch database
+        self.tree.bind('<Double-Button-1>', lambda e: self.switch_database())
+        
         # Populate tree
         self.refresh_list()
         
@@ -406,6 +459,7 @@ class DatabaseInfoDialog(tk.Toplevel):
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill="x")
         
+        ttk.Button(btn_frame, text="Switch To", command=self.switch_database).pack(side="left", padx=(0, 5))
         ttk.Button(btn_frame, text="Backup Selected", command=self.backup_selected).pack(side="left", padx=(0, 5))
         ttk.Button(btn_frame, text="Delete Selected", command=self.delete_selected).pack(side="left", padx=(0, 5))
         ttk.Button(btn_frame, text="Refresh", command=self.refresh_list).pack(side="left")
@@ -424,6 +478,14 @@ class DatabaseInfoDialog(tk.Toplevel):
         databases = self.db_manager.get_database_list()
         
         for db in databases:
+            # Skip backups folder and backup entries (format: YYYYMMDD_HHMMSS_*)
+            db_name = db["name"]
+            if db_name.lower() == "backups" or "backup" in db_name.lower():
+                continue
+            # Skip backup database entries (date pattern at start)
+            if len(db_name) > 8 and db_name[8] == '_' and db_name[:8].isdigit():
+                continue
+            
             stats = self.db_manager.get_database_stats(db["name"])
             
             created_date = db.get("created", "")
@@ -435,12 +497,39 @@ class DatabaseInfoDialog(tk.Toplevel):
                 except:
                     pass
             
-            self.tree.insert("", "end", text=db["name"], values=(
+            # Highlight current database (check both character and coa)
+            is_current = (db["name"] == self.db_manager.config.get("current_character_db") or 
+                         db["name"] == self.db_manager.config.get("current_coa_db"))
+            item_id = self.tree.insert("", "end", text=db["name"], values=(
                 db["type"],
                 stats["character_count"],
                 stats["coa_count"],
                 created_date
             ))
+            
+            if is_current:
+                self.tree.selection_set(item_id)
+                self.tree.see(item_id)
+    
+    def switch_database(self):
+        """Switch to selected database."""
+        selection = self.tree.selection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a database to switch to.", parent=self)
+            return
+        
+        db_name = self.tree.item(selection[0])["text"]
+        
+        # Check if already active (for either character or coa)
+        current_char = self.db_manager.config.get("current_character_db")
+        current_coa = self.db_manager.config.get("current_coa_db")
+        
+        if db_name == current_char and db_name == current_coa:
+            messagebox.showinfo("Already Active", f"Database '{db_name}' is already active for both characters and CoAs.", parent=self)
+            return
+        
+        self.result = db_name
+        self.destroy()
     
     def backup_selected(self):
         """Backup selected database."""
@@ -467,7 +556,7 @@ class DatabaseInfoDialog(tk.Toplevel):
         
         db_name = self.tree.item(selection[0])["text"]
         
-        if db_name == "default":
+        if db_name == "Default":
             messagebox.showerror("Error", "Cannot delete the default database.", parent=self)
             return
         

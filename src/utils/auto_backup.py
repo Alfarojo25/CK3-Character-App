@@ -29,7 +29,7 @@ class AutoBackupManager:
     }
     
     def __init__(self, db_directory: str, backup_directory: str, 
-                 interval: str = "disabled", max_backups: int = 10):
+                 interval: str = "disabled", max_backups: int = 1, max_size_gb: float = 10.0, db_name: str = "Default"):
         """
         Initialize auto backup manager.
         
@@ -37,12 +37,16 @@ class AutoBackupManager:
             db_directory: Path to database directory
             backup_directory: Path to backup storage directory
             interval: Backup interval ("disabled", "1min", "5min", "10min", "30min")
-            max_backups: Maximum number of backups to keep
+            max_backups: Maximum number of backups to keep (default: 1)
+            max_size_gb: Maximum backup size in GB (default: 10.0)
+            db_name: Database name for backup filename (default: "Default")
         """
         self.db_directory = db_directory
         self.backup_directory = backup_directory
         self.interval = interval
         self.max_backups = max_backups
+        self.max_size_gb = max_size_gb
+        self.db_name = db_name
         
         self.is_running = False
         self.backup_thread: Optional[threading.Thread] = None
@@ -121,15 +125,18 @@ class AutoBackupManager:
             
             # Perform backup
             try:
-                backup_path = self.create_backup()
-                logger.info(f"Auto backup created: {backup_path}")
-                
-                # Call callback if set
-                if self.on_backup_complete:
-                    self.on_backup_complete(backup_path)
-                
-                # Clean old backups
+                # Clean old backups BEFORE creating new one
                 self.cleanup_old_backups()
+                
+                backup_path = self.create_backup()
+                if backup_path:
+                    logger.info(f"Auto backup created: {backup_path}")
+                    
+                    # Call callback if set
+                    if self.on_backup_complete:
+                        self.on_backup_complete(backup_path)
+                else:
+                    logger.warning("Backup skipped: would exceed size limit")
                 
             except Exception as e:
                 logger.error(f"Auto backup failed: {e}")
@@ -139,22 +146,54 @@ class AutoBackupManager:
         Create a backup of the database.
         
         Returns:
-            Path to created backup file
+            Path to created backup file, or None if size limit exceeded
         """
+        # First, calculate the total size of files to backup
+        total_size = 0
+        max_size_bytes = self.max_size_gb * 1024 * 1024 * 1024  # Convert GB to bytes
+        
+        for root, dirs, files in os.walk(self.db_directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                try:
+                    total_size += os.path.getsize(file_path)
+                except OSError:
+                    pass  # Skip files that can't be accessed
+        
+        # Check if size exceeds limit
+        if total_size > max_size_bytes:
+            size_gb = total_size / (1024 * 1024 * 1024)
+            logger.error(f"Database size ({size_gb:.2f} GB) exceeds backup limit ({self.max_size_gb} GB)")
+            return None
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_name = f"auto_backup_{timestamp}.zip"
+        # New format: Database_YYYYMMDD_HHMMSS_CK3_Character_App_NombreDB.zip
+        backup_name = f"Database_{timestamp}_CK3_Character_App_{self.db_name}.zip"
         backup_path = os.path.join(self.backup_directory, backup_name)
+        
+        # Folder name inside the ZIP (same as backup filename without .zip)
+        zip_folder_name = backup_name.replace(".zip", "")
         
         # Create zip file
         with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Walk through database directory
             for root, dirs, files in os.walk(self.db_directory):
+                # Skip backups directory
+                if 'backups' in dirs:
+                    dirs.remove('backups')
+                
                 for file in files:
                     file_path = os.path.join(root, file)
+                    # Calculate relative path from db_directory
                     arcname = os.path.relpath(file_path, self.db_directory)
-                    zipf.write(file_path, arcname)
+                    # Add to ZIP inside the folder structure
+                    zipf.write(file_path, os.path.join(zip_folder_name, arcname))
         
-        logger.info(f"Backup created: {backup_path}")
+        # Verify created backup size
+        backup_size = os.path.getsize(backup_path)
+        backup_size_gb = backup_size / (1024 * 1024 * 1024)
+        logger.info(f"Backup created: {backup_path} ({backup_size_gb:.2f} GB)")
+        
         return backup_path
     
     def cleanup_old_backups(self):
@@ -163,7 +202,8 @@ class AutoBackupManager:
             # Get all backup files
             backups = []
             for file in os.listdir(self.backup_directory):
-                if file.startswith("auto_backup_") and file.endswith(".zip"):
+                # Match both old (auto_backup_*) and new (Database_*) formats
+                if (file.startswith("auto_backup_") or file.startswith("Database_")) and file.endswith(".zip"):
                     file_path = os.path.join(self.backup_directory, file)
                     backups.append((file_path, os.path.getmtime(file_path)))
             
@@ -193,7 +233,8 @@ class AutoBackupManager:
         
         try:
             for file in os.listdir(self.backup_directory):
-                if file.startswith("auto_backup_") and file.endswith(".zip"):
+                # Match both old (auto_backup_*) and new (Database_*) formats
+                if (file.startswith("auto_backup_") or file.startswith("Database_")) and file.endswith(".zip"):
                     file_path = os.path.join(self.backup_directory, file)
                     size = os.path.getsize(file_path)
                     mtime = os.path.getmtime(file_path)
