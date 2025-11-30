@@ -2,6 +2,38 @@
 
 All notable changes to CK3 Character & CoA Manager will be documented in this file.
 
+## [2.2.0] - 2025-11-29
+
+### Added
+
+- 📝 **Comprehensive Logging System**
+  - Automatic logging to `log/log.txt` with rotation (5MB max, 3 backups)
+  - All operations logged: character CRUD, database operations, image handling
+  - Detailed logging in core modules (GalleryManager, CoAManager, DatabaseManager)
+  - Operation tracking with timestamps, success/failure status, and context
+- 🛡️ **Error Handling & Exception Management**
+  - Global Python exception handler (`sys.excepthook`) for uncaught errors
+  - Tkinter exception handler (`report_callback_exception`) for GUI errors
+  - Full stack traces logged for all exceptions
+  - User-friendly error dialogs with technical details logged
+- 🔍 **Operation Tracking**
+  - Character operations: create, save, update, delete
+  - Gallery operations: create, save, reload
+  - CoA operations: add, delete, image handling
+  - Database operations: create, switch, initialization
+  - Image file operations with success/failure logging
+
+### Technical Details
+
+- Enhanced `logger.py` with global exception handlers
+- Added logging to `gallery_manager.py`: save_galleries, create_gallery, add_character, delete_character
+- Added logging to `coa_manager.py`: save_galleries, create_gallery, add_coa, delete_coa
+- Added logging to `database_manager.py`: create_database
+- Added logging to `main_window.py`: all character operations, database switching, Tkinter error handler
+- All file I/O operations wrapped in try-catch with comprehensive error logging
+- Log rotation prevents excessive disk usage
+- Console output (WARNING+) and file output (INFO+) with different verbosity levels
+
 ## [2.1.0] - 2025-11-07
 
 ### Added
