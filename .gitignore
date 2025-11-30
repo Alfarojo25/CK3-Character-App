@@ -67,6 +67,9 @@ Thumbs.db
 
 # Application data
 character_data/
+databases/
+log/
+*.log
 
 # Temporary files
 temp_clipboard.png

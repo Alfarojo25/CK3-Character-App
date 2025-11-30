@@ -8,6 +8,9 @@ import os
 import shutil
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseManager:
@@ -156,8 +159,10 @@ class DatabaseManager:
             True if created successfully
         """
         if name in self.config["databases"]:
+            logger.warning(f"Cannot create database '{name}': already exists")
             return False
         
+        logger.info(f"Creating new database: {name} (type: {db_type})")
         self.config["databases"][name] = {
             "name": name,
             "type": db_type,
@@ -178,6 +183,7 @@ class DatabaseManager:
             os.makedirs(os.path.join(db_path, "coa_data"), exist_ok=True)
             os.makedirs(os.path.join(db_path, "coa_data", "images"), exist_ok=True)
         
+        logger.info(f"Database created successfully: {name} at {db_path}")
         return True
     
     def delete_database(self, name: str) -> bool:

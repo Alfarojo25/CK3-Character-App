@@ -9,7 +9,10 @@ import shutil
 import uuid
 import time
 import re
+import logging
 from typing import List, Dict, Optional, Any
+
+logger = logging.getLogger(__name__)
 
 
 class GalleryManager:
@@ -65,8 +68,14 @@ class GalleryManager:
     
     def save_galleries(self) -> None:
         """Save galleries to JSON file."""
-        with open(self.data_file, 'w', encoding='utf-8') as f:
-            json.dump(self.galleries, f, indent=2, ensure_ascii=False)
+        try:
+            logger.info(f"Saving galleries to {self.data_file}")
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                json.dump(self.galleries, f, indent=2, ensure_ascii=False)
+            logger.info(f"Successfully saved {len(self.galleries)} galleries")
+        except Exception as e:
+            logger.error(f"Error saving galleries to {self.data_file}: {str(e)}", exc_info=True)
+            raise
     
     def reload_from_disk(self) -> None:
         """Reload galleries data from disk."""
@@ -93,17 +102,24 @@ class GalleryManager:
         Returns:
             True if created successfully, False if name already exists
         """
-        if any(g["name"] == name for g in self.galleries):
+        try:
+            logger.info(f"Creating gallery: {name}")
+            if any(g["name"] == name for g in self.galleries):
+                logger.warning(f"Gallery '{name}' already exists")
+                return False
+            
+            self.galleries.append({
+                "name": name,
+                "characters": [],
+                "created": time.time(),
+                "modified": time.time()
+            })
+            self.save_galleries()
+            logger.info(f"Successfully created gallery: {name}")
+            return True
+        except Exception as e:
+            logger.error(f"Error creating gallery '{name}': {str(e)}", exc_info=True)
             return False
-        
-        self.galleries.append({
-            "name": name,
-            "characters": [],
-            "created": time.time(),
-            "modified": time.time()
-        })
-        self.save_galleries()
-        return True
     
     def rename_gallery(self, old_name: str, new_name: str) -> bool:
         """Rename a gallery."""
@@ -155,44 +171,52 @@ class GalleryManager:
         Returns:
             Character ID if successful, None otherwise
         """
-        gallery = self.get_gallery(gallery_name)
-        if not gallery:
+        try:
+            logger.info(f"Adding character '{name}' to gallery '{gallery_name}'")
+            gallery = self.get_gallery(gallery_name)
+            if not gallery:
+                logger.warning(f"Gallery '{gallery_name}' not found")
+                return None
+            
+            char_id = str(uuid.uuid4())
+            character = {
+                'id': char_id,
+                'name': name,
+                'dna': dna,
+                'tags': tags or [],
+                'image': None,
+                'created': time.time(),
+                'modified': time.time()
+            }
+            
+            # Copy image if provided
+            if image_path and os.path.exists(image_path):
+                # Use character name for filename, with UUID as fallback
+                safe_name = self._sanitize_filename(name) or char_id
+                base_name = safe_name
+                counter = 1
+                dest_path = os.path.join(self.images_dir, f"{base_name}.png")
+                
+                # If file exists, append counter
+                while os.path.exists(dest_path) and dest_path != image_path:
+                    dest_path = os.path.join(self.images_dir, f"{base_name}_{counter}.png")
+                    counter += 1
+                
+                try:
+                    shutil.copy2(image_path, dest_path)
+                    character['image'] = dest_path
+                    logger.info(f"Copied character image to {dest_path}")
+                except IOError as e:
+                    logger.warning(f"Failed to copy image for '{name}': {str(e)}")
+            
+            gallery["characters"].append(character)
+            gallery["modified"] = time.time()
+            self.save_galleries()
+            logger.info(f"Successfully added character '{name}' with ID {char_id}")
+            return char_id
+        except Exception as e:
+            logger.error(f"Error adding character '{name}' to gallery '{gallery_name}': {str(e)}", exc_info=True)
             return None
-        
-        char_id = str(uuid.uuid4())
-        character = {
-            'id': char_id,
-            'name': name,
-            'dna': dna,
-            'tags': tags or [],
-            'image': None,
-            'created': time.time(),
-            'modified': time.time()
-        }
-        
-        # Copy image if provided
-        if image_path and os.path.exists(image_path):
-            # Use character name for filename, with UUID as fallback
-            safe_name = self._sanitize_filename(name) or char_id
-            base_name = safe_name
-            counter = 1
-            dest_path = os.path.join(self.images_dir, f"{base_name}.png")
-            
-            # If file exists, append counter
-            while os.path.exists(dest_path) and dest_path != image_path:
-                dest_path = os.path.join(self.images_dir, f"{base_name}_{counter}.png")
-                counter += 1
-            
-            try:
-                shutil.copy2(image_path, dest_path)
-                character['image'] = dest_path
-            except IOError:
-                pass
-        
-        gallery["characters"].append(character)
-        gallery["modified"] = time.time()
-        self.save_galleries()
-        return char_id
     
     def update_character(self, gallery_name: str, char_id: str, 
                         name: Optional[str] = None, dna: Optional[str] = None,
@@ -240,25 +264,36 @@ class GalleryManager:
     
     def delete_character(self, gallery_name: str, char_id: str) -> bool:
         """Delete a character and its image."""
-        gallery = self.get_gallery(gallery_name)
-        if not gallery:
+        try:
+            logger.info(f"Deleting character {char_id} from gallery '{gallery_name}'")
+            gallery = self.get_gallery(gallery_name)
+            if not gallery:
+                logger.warning(f"Gallery '{gallery_name}' not found")
+                return False
+            
+            for i, char in enumerate(gallery["characters"]):
+                if char["id"] == char_id:
+                    char_name = char.get('name', 'Unknown')
+                    # Remove image
+                    img_path = char.get("image")
+                    if img_path and os.path.exists(img_path):
+                        try:
+                            os.remove(img_path)
+                            logger.info(f"Deleted image: {img_path}")
+                        except OSError as e:
+                            logger.warning(f"Failed to delete image {img_path}: {str(e)}")
+                    
+                    gallery["characters"].pop(i)
+                    gallery["modified"] = time.time()
+                    self.save_galleries()
+                    logger.info(f"Successfully deleted character '{char_name}' ({char_id})")
+                    return True
+            
+            logger.warning(f"Character {char_id} not found in gallery '{gallery_name}'")
             return False
-        
-        for i, char in enumerate(gallery["characters"]):
-            if char["id"] == char_id:
-                # Remove image
-                img_path = char.get("image")
-                if img_path and os.path.exists(img_path):
-                    try:
-                        os.remove(img_path)
-                    except OSError:
-                        pass
-                
-                gallery["characters"].pop(i)
-                gallery["modified"] = time.time()
-                self.save_galleries()
-                return True
-        return False
+        except Exception as e:
+            logger.error(f"Error deleting character {char_id} from '{gallery_name}': {str(e)}", exc_info=True)
+            return False
     
     def set_character_image(self, gallery_name: str, char_id: str, image_path: str) -> bool:
         """Set or update a character's portrait image."""

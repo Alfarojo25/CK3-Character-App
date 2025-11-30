@@ -41,6 +41,9 @@ class CK3CharacterApp(tk.Tk):
         
         logger.info("Initializing CK3 Character Manager")
         
+        # Setup Tkinter error reporting
+        self.report_callback_exception = self.handle_tk_exception
+        
         # Initialize configuration and i18n first
         self.app_config = get_config()
         self.i18n = get_i18n()
@@ -155,6 +158,16 @@ class CK3CharacterApp(tk.Tk):
         
         # Handle window close
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+    
+    def handle_tk_exception(self, exc_type, exc_value, exc_traceback):
+        """Handle Tkinter exceptions and log them."""
+        import traceback
+        logger.error("Tkinter exception occurred:")
+        logger.error(''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+        
+        # Show error to user
+        error_msg = f"{exc_type.__name__}: {exc_value}"
+        messagebox.showerror("Error", f"An error occurred:\n\n{error_msg}\n\nCheck log/log.txt for details.")
     
     def ask_database_directory(self) -> str:
         """
@@ -825,6 +838,7 @@ class CK3CharacterApp(tk.Tk):
         
         name = simpledialog.askstring(self.i18n.t("new_character"), self.i18n.t("enter_character_name"), parent=self)
         if name:
+            logger.info(f"Creating new character: {name} in gallery: {self.current_gallery_name}")
             char_id = self.gallery_manager.add_character(self.current_gallery_name, name)
             if char_id:
                 self.update_tag_autocomplete()
@@ -838,8 +852,10 @@ class CK3CharacterApp(tk.Tk):
                         self.on_character_select()
                         break
                 self.set_status(self.i18n.t("character_created", name=name))
+                logger.info(f"Character created successfully: {name} (ID: {char_id})")
             else:
                 messagebox.showerror(self.i18n.t("error"), self.i18n.t("failed_create_character"))
+                logger.error(f"Failed to create character: {name}")
     
     def delete_character(self):
         """Delete current character."""
@@ -849,14 +865,17 @@ class CK3CharacterApp(tk.Tk):
         name = self.current_character.get("name", "")
         if messagebox.askyesno(self.i18n.t("delete_character"), self.i18n.t("delete_character_confirm", name=name)):
             char_id = self.current_character.get("id")
+            logger.info(f"Deleting character: {name} (ID: {char_id}) from gallery: {self.current_gallery_name}")
             if self.gallery_manager.delete_character(self.current_gallery_name, char_id):
                 self.update_tag_autocomplete()
                 self.filter_characters()
                 self.clear_character_display()
                 self.current_character = None
                 self.set_status(self.i18n.t("character_deleted", name=name))
+                logger.info(f"Character deleted successfully: {name}")
             else:
                 messagebox.showerror(self.i18n.t("error"), self.i18n.t("failed_delete_character"))
+                logger.error(f"Failed to delete character: {name}")
     
     def copy_character(self):
         """Duplicate/Copy current character."""
@@ -914,9 +933,11 @@ class CK3CharacterApp(tk.Tk):
         
         if not name:
             messagebox.showwarning(self.i18n.t("warning"), self.i18n.t("character_name_empty"))
+            logger.warning("Attempted to save character without name")
             return
         
         char_id = self.current_character.get("id")
+        logger.info(f"Saving character: {name} (ID: {char_id}) in gallery: {self.current_gallery_name}")
         if self.gallery_manager.update_character(self.current_gallery_name, char_id, name, dna, tags):
             self.current_character["name"] = name
             self.current_character["dna"] = dna
@@ -925,8 +946,10 @@ class CK3CharacterApp(tk.Tk):
             self.filter_characters()
             self.dirty = False
             self.set_status(self.i18n.t("character_saved"))
+            logger.info(f"Character saved successfully: {name}")
         else:
             messagebox.showerror(self.i18n.t("error"), self.i18n.t("failed_save_character"))
+            logger.error(f"Failed to save character: {name}")
     
     def on_data_change(self):
         """Mark data as dirty when changed."""
@@ -1093,6 +1116,7 @@ class CK3CharacterApp(tk.Tk):
         self.wait_window(dialog)
         
         if dialog.result and dialog.result != current_db:
+            logger.info(f"Switching database from '{current_db}' to '{dialog.result}' (mode: {self.current_mode})")
             if self.db_manager.set_current_database(dialog.result, 
                                                      "character" if self.current_mode == "character" else "coa"):
                 # Update current database name
@@ -1142,8 +1166,10 @@ class CK3CharacterApp(tk.Tk):
                 self.refresh_gallery_list()
                 messagebox.showinfo("Success", f"Switched to database '{dialog.result}'")
                 self.set_status(f"Active database: {dialog.result}")
+                logger.info(f"Database switched successfully to '{dialog.result}'")
             else:
                 messagebox.showerror("Error", "Failed to switch database.")
+                logger.error(f"Failed to switch database to '{dialog.result}'")
     
     def backup_database(self):
         """Backup the current database with file location selector."""

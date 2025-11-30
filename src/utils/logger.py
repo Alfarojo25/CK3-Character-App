@@ -5,18 +5,24 @@ Configures application logging with file rotation.
 
 import logging
 import os
+import sys
+import traceback
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
 
-def setup_logging(log_file: str = "app.log", level: int = logging.INFO):
+def setup_logging(log_file: str = None, level: int = logging.INFO):
     """
     Setup application logging with file rotation.
     
     Args:
-        log_file: Path to log file
+        log_file: Path to log file (default: log/log.txt)
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     """
+    # Default log file in log directory
+    if log_file is None:
+        log_file = os.path.join("log", "log.txt")
+    
     # Create logs directory if needed
     log_dir = os.path.dirname(log_file)
     if log_dir and not os.path.exists(log_dir):
@@ -52,6 +58,19 @@ def setup_logging(log_file: str = "app.log", level: int = logging.INFO):
     console_handler.setLevel(logging.WARNING)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
+    
+    # Setup global exception handler to log uncaught exceptions
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        """Handle uncaught exceptions and log them."""
+        if issubclass(exc_type, KeyboardInterrupt):
+            # Don't log keyboard interrupt
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+        
+        logger.critical("Uncaught exception:", exc_info=(exc_type, exc_value, exc_traceback))
+        logger.critical("".join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+    
+    sys.excepthook = handle_exception
     
     # Log startup
     logger.info("="*50)

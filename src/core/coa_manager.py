@@ -4,12 +4,15 @@ Manages CK3 coat of arms without DNA duplication functionality.
 """
 
 import json
+import logging
 import os
 import re
 import time
 import uuid
 from typing import Dict, List, Optional, Any
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 class CoAManager:
@@ -52,8 +55,14 @@ class CoAManager:
     
     def save_galleries(self) -> None:
         """Save galleries to JSON file."""
-        with open(self.data_file, 'w', encoding='utf-8') as f:
-            json.dump(self.galleries, f, indent=2, ensure_ascii=False)
+        try:
+            logger.info(f"Saving CoA galleries to {self.data_file}")
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                json.dump(self.galleries, f, indent=2, ensure_ascii=False)
+            logger.info(f"Successfully saved {len(self.galleries)} CoA galleries")
+        except Exception as e:
+            logger.error(f"Error saving CoA galleries to {self.data_file}: {str(e)}", exc_info=True)
+            raise
     
     def reload_from_disk(self) -> None:
         """Reload galleries data from disk."""
@@ -81,18 +90,25 @@ class CoAManager:
         Returns:
             True if created successfully
         """
-        if any(g["name"] == name for g in self.galleries):
+        try:
+            logger.info(f"Creating CoA gallery: {name}")
+            if any(g["name"] == name for g in self.galleries):
+                logger.warning(f"CoA gallery '{name}' already exists")
+                return False
+            
+            self.galleries.append({
+                "name": name,
+                "description": description,
+                "coats_of_arms": [],
+                "created": time.time(),
+                "modified": time.time()
+            })
+            self.save_galleries()
+            logger.info(f"Successfully created CoA gallery: {name}")
+            return True
+        except Exception as e:
+            logger.error(f"Error creating CoA gallery '{name}': {str(e)}", exc_info=True)
             return False
-        
-        self.galleries.append({
-            "name": name,
-            "description": description,
-            "coats_of_arms": [],
-            "created": time.time(),
-            "modified": time.time()
-        })
-        self.save_galleries()
-        return True
     
     def load_gallery(self, name: str) -> Optional[Dict]:
         """Load a gallery by name."""
@@ -122,37 +138,47 @@ class CoAManager:
         Returns:
             True if added successfully
         """
-        gallery = self.get_gallery(gallery_name)
-        if not gallery:
-            return False
-        
-        # Check if CoA already exists
-        for coa in gallery["coats_of_arms"]:
-            if coa["id"] == coa_id:
+        try:
+            logger.info(f"Adding CoA '{coa_id}' to gallery '{gallery_name}'")
+            gallery = self.get_gallery(gallery_name)
+            if not gallery:
+                logger.warning(f"CoA gallery '{gallery_name}' not found")
                 return False
-        
-        coa_data = {
-            "id": coa_id,
-            "code": coa_code,
-            "tags": tags or [],
-            "has_image": False,
-            "created": time.time(),
-            "modified": time.time()
-        }
-        
-        # Copy image if provided
-        if image_path and os.path.exists(image_path):
-            try:
-                image = Image.open(image_path)
-                image.save(self.get_image_file(coa_id))
-                coa_data["has_image"] = True
-            except Exception:
-                pass
-        
-        gallery["coats_of_arms"].append(coa_data)
-        gallery["modified"] = time.time()
-        self.save_galleries()
-        return True
+            
+            # Check if CoA already exists
+            for coa in gallery["coats_of_arms"]:
+                if coa["id"] == coa_id:
+                    logger.warning(f"CoA '{coa_id}' already exists in '{gallery_name}'")
+                    return False
+            
+            coa_data = {
+                "id": coa_id,
+                "code": coa_code,
+                "tags": tags or [],
+                "has_image": False,
+                "created": time.time(),
+                "modified": time.time()
+            }
+            
+            # Copy image if provided
+            if image_path and os.path.exists(image_path):
+                try:
+                    image = Image.open(image_path)
+                    dest_path = self.get_image_file(coa_id)
+                    image.save(dest_path)
+                    coa_data["has_image"] = True
+                    logger.info(f"Saved CoA image to {dest_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to save CoA image for '{coa_id}': {str(e)}")
+            
+            gallery["coats_of_arms"].append(coa_data)
+            gallery["modified"] = time.time()
+            self.save_galleries()
+            logger.info(f"Successfully added CoA '{coa_id}' to gallery '{gallery_name}'")
+            return True
+        except Exception as e:
+            logger.error(f"Error adding CoA '{coa_id}' to gallery '{gallery_name}': {str(e)}", exc_info=True)
+            return False
     
     def update_coa(self, gallery_name: str, coa_id: str, coa_code: str = None,
                    tags: List[str] = None, image_path: str = None) -> bool:
@@ -202,23 +228,38 @@ class CoAManager:
         Returns:
             True if deleted successfully
         """
-        gallery = self.load_gallery(gallery_name)
-        if gallery is None:
-            return False
-        
-        original_count = len(gallery["coats_of_arms"])
-        gallery["coats_of_arms"] = [
-            coa for coa in gallery["coats_of_arms"] if coa["id"] != coa_id
-        ]
-        
-        if len(gallery["coats_of_arms"]) < original_count:
-            # Delete image file
-            image_file = self.get_image_file(coa_id)
-            if os.path.exists(image_file):
-                os.remove(image_file)
+        try:
+            logger.info(f"Deleting CoA '{coa_id}' from gallery '{gallery_name}'")
+            gallery = self.load_gallery(gallery_name)
+            if gallery is None:
+                logger.warning(f"CoA gallery '{gallery_name}' not found")
+                return False
             
-            return self.save_gallery(gallery_name, gallery)
-        
+            original_count = len(gallery["coats_of_arms"])
+            gallery["coats_of_arms"] = [
+                coa for coa in gallery["coats_of_arms"] if coa["id"] != coa_id
+            ]
+            
+            if len(gallery["coats_of_arms"]) < original_count:
+                # Delete image file
+                image_file = self.get_image_file(coa_id)
+                if os.path.exists(image_file):
+                    try:
+                        os.remove(image_file)
+                        logger.info(f"Deleted CoA image: {image_file}")
+                    except OSError as e:
+                        logger.warning(f"Failed to delete CoA image {image_file}: {str(e)}")
+                
+                result = self.save_gallery(gallery_name, gallery)
+                if result:
+                    logger.info(f"Successfully deleted CoA '{coa_id}' from gallery '{gallery_name}'")
+                return result
+            
+            logger.warning(f"CoA '{coa_id}' not found in gallery '{gallery_name}'")
+            return False
+        except Exception as e:
+            logger.error(f"Error deleting CoA '{coa_id}' from gallery '{gallery_name}': {str(e)}", exc_info=True)
+            return False
         return False
     
     def get_coa(self, gallery_name: str, coa_id: str) -> Optional[Dict]:
