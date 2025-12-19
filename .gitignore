@@ -74,3 +74,6 @@ log/
 # Temporary files
 temp_clipboard.png
 *.tmp
+
+# Configuration files
+config.json

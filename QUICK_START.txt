@@ -1,0 +1,200 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   CK3 CHARACTER MANAGER - QUICK START GUIDE                 ║
+║                    CK3 CHARACTER MANAGER - INICIO RÁPIDO                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+═════════════════════════════════════════════════════════════════════════════
+ENGLISH VERSION
+═════════════════════════════════════════════════════════════════════════════
+
+INSTALLATION AND EXECUTION INSTRUCTIONS
+─────────────────────────────────────────────────────────────────────────────
+
+STEP 1: INSTALL PYTHON
+─────────────────────────────────────────────────────────────────────────────
+
+1. Locate the file: install_python.bat
+2. Double-click to run it
+3. The script will check if Python is installed
+4. If not installed, it will automatically install it
+5. Wait for the installation to complete
+
+IMPORTANT! If you see a Windows or antivirus warning, click "Allow"
+
+
+STEP 2: RUN THE APPLICATION
+─────────────────────────────────────────────────────────────────────────────
+
+Option A (Recommended - Easiest):
+1. Locate the file: app.py
+2. Double-click to run the application
+3. The application should open automatically
+
+Option B (Using Terminal):
+1. Open a terminal (Command Prompt or PowerShell)
+2. Navigate to the project folder
+3. Run the command:
+   
+   python app.py
+
+4. Press Enter and wait for the application to start
+
+
+TROUBLESHOOTING
+─────────────────────────────────────────────────────────────────────────────
+
+❌ Error: "Python not found"
+   → Open a new terminal/window (the PATH is automatically updated)
+   → Try again: python app.py
+
+❌ Error: "No module named PIL"
+   → Open a terminal as administrator
+   → Run: pip install Pillow
+   → Try again: python app.py
+
+❌ Error: "Access denied" when running install_python.bat
+   → Right-click on install_python.bat
+   → Select "Run as administrator"
+
+❌ Application closes immediately
+   → Open a terminal in the project folder
+   → Run: python app.py
+   → Check the error message that appears
+
+❌ Automatic Python installation failed
+   → Download Python manually from: https://www.python.org/downloads/
+   → During installation, MAKE SURE to check "Add Python to PATH"
+   → Select "Install for all users"
+   → Complete the installation
+   → Try again: python app.py
+
+
+MAIN FEATURES
+─────────────────────────────────────────────────────────────────────────────
+
+✓ Create and manage CK3 characters
+✓ Manage coats of arms (CoA)
+✓ Edit character DNA
+✓ Copy and duplicate characters
+✓ Manage multiple databases
+✓ Export and import data
+✓ Multi-language support
+
+
+IMPORTANT FILES
+─────────────────────────────────────────────────────────────────────────────
+
+install_python.bat      - Script to install Python
+app.py                  - Main application file
+README.md               - Complete documentation
+config.json             - Application configuration
+databases/              - Database folder
+log/                    - Log files
+
+
+SUPPORT AND HELP
+─────────────────────────────────────────────────────────────────────────────
+
+If you encounter problems:
+1. Check the log file: log/log.txt
+2. Read the README.md for more information
+3. Try running from terminal to see detailed error messages
+
+
+═════════════════════════════════════════════════════════════════════════════
+VERSIÓN EN ESPAÑOL
+═════════════════════════════════════════════════════════════════════════════
+
+INSTRUCCIONES DE INSTALACIÓN Y EJECUCIÓN
+─────────────────────────────────────────────────────────────────────────────
+
+PASO 1: INSTALAR PYTHON
+─────────────────────────────────────────────────────────────────────────────
+
+1. Busca el archivo: install_python.bat
+2. Haz doble clic para ejecutarlo
+3. El script verificará si Python está instalado
+4. Si no está, intentará instalarlo automáticamente
+5. Espera a que termine la instalación
+
+¡IMPORTANTE! Si ves una advertencia de Windows o antivirus, haz clic en "Permitir"
+
+
+PASO 2: EJECUTAR LA APLICACIÓN
+─────────────────────────────────────────────────────────────────────────────
+
+Opción A (Recomendado - Más fácil):
+1. Busca el archivo: app.py
+2. Haz doble clic para ejecutar la aplicación
+3. La aplicación debería abrirse automáticamente
+
+Opción B (Usando terminal):
+1. Abre una terminal (Command Prompt o PowerShell)
+2. Navega a la carpeta del proyecto
+3. Ejecuta el comando:
+   
+   python app.py
+
+4. Presiona Enter y espera a que la aplicación inicie
+
+
+SOLUCIÓN DE PROBLEMAS
+─────────────────────────────────────────────────────────────────────────────
+
+❌ Error: "Python no se encuentra"
+   → Abre una nueva terminal/ventana (el PATH se actualiza automáticamente)
+   → Intenta de nuevo: python app.py
+
+❌ Error: "No se encontró el módulo PIL"
+   → Abre una terminal como administrador
+   → Ejecuta: pip install Pillow
+   → Intenta de nuevo: python app.py
+
+❌ Error: "Acceso denegado" en install_python.bat
+   → Haz clic derecho en install_python.bat
+   → Selecciona "Ejecutar como administrador"
+
+❌ La aplicación se cierra inmediatamente
+   → Abre una terminal en la carpeta del proyecto
+   → Ejecuta: python app.py
+   → Verifica el mensaje de error que aparece
+
+❌ Instalación automática de Python falló
+   → Descarga Python manualmente desde: https://www.python.org/downloads/
+   → Durante la instalación, MARCA la opción "Add Python to PATH"
+   → Selecciona "Install for all users"
+   → Completa la instalación
+   → Intenta de nuevo: python app.py
+
+
+FUNCIONES PRINCIPALES
+─────────────────────────────────────────────────────────────────────────────
+
+✓ Crear y gestionar personajes de CK3
+✓ Gestionar escudos de armas (CoA)
+✓ Editar DNA de personajes
+✓ Copiar y duplicar personajes
+✓ Gestionar múltiples bases de datos
+✓ Exportar e importar datos
+✓ Soporte multiidioma
+
+
+ARCHIVOS IMPORTANTES
+─────────────────────────────────────────────────────────────────────────────
+
+install_python.bat      - Script para instalar Python
+app.py                  - Archivo principal de la aplicación
+README.md               - Documentación completa
+config.json             - Configuración de la aplicación
+databases/              - Carpeta de bases de datos
+log/                    - Archivos de registro
+
+
+CONTACTO Y SOPORTE
+─────────────────────────────────────────────────────────────────────────────
+
+Si tienes problemas:
+1. Revisa el archivo de registro: log/log.txt
+2. Consulta el README.md para más información
+3. Intenta ejecutar desde la terminal para ver errores detallados

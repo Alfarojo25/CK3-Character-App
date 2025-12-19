@@ -2,6 +2,55 @@
 
 All notable changes to CK3 Character & CoA Manager will be documented in this file.
 
+## [2.3.0] - 2025-12-19
+
+### Added
+
+- 🐍 **Automatic Python Installation & Verification**
+  - Created `install_python.bat` script for automatic Python installation
+  - Supports Windows Package Manager (winget) and Chocolatey package managers
+  - Automatic Python download and installation if managers not available
+  - Integrated dependency verification in `app.py` main entry point
+  - REQUIREMENTS list in app.py for easy dependency management
+- 📖 **Quick Start Guides**
+  - Added `INICIO_RAPIDO.txt` (Spanish) - Step-by-step setup instructions
+  - Added `QUICK_START.txt` (English) - English version of quick start guide
+  - Comprehensive troubleshooting sections
+  - User-friendly setup process
+
+### Fixed
+
+- 🛡️ **CoA Mode Data Loading**
+  - Fixed TypeError in `CoAManager.get_gallery_names()` when loading single object JSON
+  - Added automatic JSON structure normalization for single object vs array handling
+  - Improved `reload_from_disk()` functionality in CoA mode
+  - Gallery list now properly reloads when switching databases in CoA mode
+
+- 🎨 **UI Improvements**
+  - Fixed character list display in CoA mode (now shows CoAs instead of characters)
+  - Implemented mode-aware `filter_characters()` function for proper content filtering
+  - Enhanced `on_character_select()` to handle both character and CoA selections
+  - Added `load_coa()` method to properly display CoA data in UI
+  - Reorganized search bar with clear button (X) positioned inline
+
+### Changed
+
+- 📝 **File Naming**
+  - Renamed `main.py` to `app.py` for clarity
+  - Renamed `verify_python.bat` to `install_python.bat`
+  - Updated all references in `main.spec`, `README.md`, and configuration files
+
+- 🔄 **Dependency Management**
+  - Moved from `requirements.txt` to inline REQUIREMENTS list in `app.py`
+  - Automatic dependency installation on startup if missing
+  - Reduced file clutter with fewer configuration files
+
+### Removed
+
+- Deleted `verify_python.py` (Python cannot verify Python installation)
+- Deleted `verify_python.ps1` (simplified to single .bat installer)
+- Removed `requirements.txt` (dependencies now in app.py)
+
 ## [2.2.0] - 2025-11-29
 
 ### Added

@@ -84,9 +84,50 @@ _\*Non-English/Spanish translations were generated using AI assistance. Native s
 
 ---
 
+## ⚡ Quick Start
+
+### For Users (Easiest)
+
+See **[QUICK_START.txt](QUICK_START.txt)** for detailed step-by-step instructions in English and Spanish:
+
+1. Run `install_python.bat` (installs Python automatically)
+2. Double-click `app.py` to launch the application
+3. Follow the troubleshooting section if needed
+
+### For Developers
+
+1. **Clone this repository**:
+
+   ```bash
+   git clone https://github.com/Alfarojo25/CK3-Character-App.git
+   cd CK3-Character-App
+   ```
+
+2. **Create a virtual environment** (recommended):
+
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # On Windows
+   source .venv/bin/activate  # On Linux/macOS
+   ```
+
+3. **Install dependencies**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the application**:
+
+   ```bash
+   python app.py
+   ```
+
+---
+
 ## 📥 Installation
 
-### Option 1: Run from Source
+### Option 1: Run from Source (Developers)
 
 1. **Requirements**:
 
@@ -103,10 +144,10 @@ _\*Non-English/Spanish translations were generated using AI assistance. Native s
 
 4. **Run the application**:
    ```bash
-   python main.py
+   python app.py
    ```
 
-### Option 2: Use Compiled Executable (Recommended)
+### Option 2: Use Compiled Executable (Recommended for Users)
 
 1. Download the latest `.exe` from the releases page
 2. Double-click to run (no installation needed)
@@ -128,7 +169,7 @@ pyinstaller --name "CK3 Character Manager" ^
             --windowed ^
             --add-data "assets;assets" ^
             --icon=assets/icon.ico ^
-            main.py
+            app.py
 ```
 
 The executable will be created in the `dist/` folder.
@@ -145,7 +186,7 @@ python -m nuitka --standalone ^
                  --windows-disable-console ^
                  --output-filename="CK3-Character-Manager.exe" ^
                  --windows-icon-from-ico=assets/icon.ico ^
-                 main.py
+                 app.py
 ```
 
 ---
@@ -224,7 +265,7 @@ Use the **View** menu to toggle modes:
 
 ```
 CK3-Character-App/
-├── main.py                      # Application entry point
+├── app.py                       # Application entry point
 ├── requirements.txt             # Python dependencies
 ├── LICENSE                      # MIT License
 ├── README.md                    # This file
