@@ -303,5 +303,19 @@
   "settings_select_db_directory": "Sélectionner le répertoire de la base de données",
   "settings_saved": "Paramètres enregistrés",
   "settings_restart_required": "Certaines modifications nécessitent le redémarrage de l'application. Redémarrer maintenant ?",
-  "settings_saved_message": "Paramètres enregistrés avec succès."
+  "settings_saved_message": "Paramètres enregistrés avec succès.",
+  
+  "python_dependencies": "Dépendances Python",
+  "python_checking_dependencies": "✅ Vérification des dépendances Python...",
+  "python_all_dependencies_installed": "✅ Toutes les dépendances sont installées",
+  "python_missing_packages": "⚠️ Paquets manquants:",
+  "python_installing_dependencies": "📦 Installation des dépendances manquantes...",
+  "python_dependencies_installed": "✅ Dépendances installées avec succès",
+  "python_dependency_installation_failed": "❌ Erreur lors de l'installation des dépendances:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "Répertoire de la Base de Données",
+  "db_directory_found": "Une base de données existante a été trouvée à:\n{}\n\nVoulez-vous utiliser cet emplacement?\n\nOui = Utiliser cet emplacement\nNon = Sélectionner un autre emplacement\nAnnuler = Quitter",
+  "db_directory_select_title": "Sélectionner le dossier pour les bases de données"
 }

@@ -303,5 +303,19 @@
   "settings_select_db_directory": "Datenbankverzeichnis auswählen",
   "settings_saved": "Einstellungen gespeichert",
   "settings_restart_required": "Einige Änderungen erfordern einen Neustart der Anwendung. Jetzt neu starten?",
-  "settings_saved_message": "Einstellungen erfolgreich gespeichert."
+  "settings_saved_message": "Einstellungen erfolgreich gespeichert.",
+  
+  "python_dependencies": "Python-Abhängigkeiten",
+  "python_checking_dependencies": "✅ Überprüfe Python-Abhängigkeiten...",
+  "python_all_dependencies_installed": "✅ Alle Abhängigkeiten sind installiert",
+  "python_missing_packages": "⚠️ Fehlende Pakete:",
+  "python_installing_dependencies": "📦 Installiere fehlende Abhängigkeiten...",
+  "python_dependencies_installed": "✅ Abhängigkeiten erfolgreich installiert",
+  "python_dependency_installation_failed": "❌ Fehler beim Installieren von Abhängigkeiten:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "Datenbankverzeichnis",
+  "db_directory_found": "Eine vorhandene Datenbank wurde gefunden unter:\n{}\n\nMöchten Sie diesen Speicherort verwenden?\n\nJa = Diesen Speicherort verwenden\nNein = Anderen Speicherort wählen\nAbbrechen = Beenden",
+  "db_directory_select_title": "Ordner für Datenbanken auswählen"
 }

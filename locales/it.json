@@ -303,5 +303,19 @@
   "settings_select_db_directory": "Seleziona Directory Database",
   "settings_saved": "Impostazioni Salvate",
   "settings_restart_required": "Alcune modifiche richiedono il riavvio dell'applicazione. Riavviare ora?",
-  "settings_saved_message": "Impostazioni salvate con successo."
+  "settings_saved_message": "Impostazioni salvate con successo.",
+  
+  "python_dependencies": "Dipendenze Python",
+  "python_checking_dependencies": "✅ Verifica delle dipendenze Python...",
+  "python_all_dependencies_installed": "✅ Tutte le dipendenze sono installate",
+  "python_missing_packages": "⚠️ Pacchetti mancanti:",
+  "python_installing_dependencies": "📦 Installazione delle dipendenze mancanti...",
+  "python_dependencies_installed": "✅ Dipendenze installate con successo",
+  "python_dependency_installation_failed": "❌ Errore durante l'installazione delle dipendenze:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "Directory Database",
+  "db_directory_found": "Un database esistente è stato trovato in:\n{}\n\nDesideri utilizzare questo percorso?\n\nSì = Usa questo percorso\nNo = Seleziona un altro percorso\nAnnulla = Esci",
+  "db_directory_select_title": "Seleziona cartella per i database"
 }

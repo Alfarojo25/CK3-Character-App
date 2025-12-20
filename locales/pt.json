@@ -303,5 +303,19 @@
   "settings_select_db_directory": "Selecionar Diretório do Banco de Dados",
   "settings_saved": "Configurações Salvas",
   "settings_restart_required": "Algumas alterações requerem reiniciar o aplicativo. Reiniciar agora?",
-  "settings_saved_message": "Configurações salvas com sucesso."
+  "settings_saved_message": "Configurações salvas com sucesso.",
+  
+  "python_dependencies": "Dependências Python",
+  "python_checking_dependencies": "✅ Verificando dependências do Python...",
+  "python_all_dependencies_installed": "✅ Todas as dependências estão instaladas",
+  "python_missing_packages": "⚠️ Pacotes ausentes:",
+  "python_installing_dependencies": "📦 Instalando dependências ausentes...",
+  "python_dependencies_installed": "✅ Dependências instaladas com sucesso",
+  "python_dependency_installation_failed": "❌ Erro ao instalar dependências:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "Diretório do Banco de Dados",
+  "db_directory_found": "Um banco de dados existente foi encontrado em:\n{}\n\nDeseja usar este local?\n\nSim = Usar este local\nNão = Selecionar outro local\nCancelar = Sair",
+  "db_directory_select_title": "Selecionar pasta para bancos de dados"
 }

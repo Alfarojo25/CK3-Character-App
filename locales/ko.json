@@ -303,5 +303,19 @@
   "settings_select_db_directory": "데이터베이스 디렉토리 선택",
   "settings_saved": "설정 저장됨",
   "settings_restart_required": "일부 변경사항은 애플리케이션을 다시 시작해야 적용됩니다. 지금 다시 시작하시겠습니까?",
-  "settings_saved_message": "설정이 성공적으로 저장되었습니다."
+  "settings_saved_message": "설정이 성공적으로 저장되었습니다.",
+  
+  "python_dependencies": "Python 종속성",
+  "python_checking_dependencies": "✅ Python 종속성 확인 중...",
+  "python_all_dependencies_installed": "✅ 모든 종속성이 설치되어 있습니다",
+  "python_missing_packages": "⚠️ 누락된 패키지:",
+  "python_installing_dependencies": "📦 누락된 종속성 설치 중...",
+  "python_dependencies_installed": "✅ 종속성이 성공적으로 설치되었습니다",
+  "python_dependency_installation_failed": "❌ 종속성 설치 중 오류 발생:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "데이터베이스 디렉토리",
+  "db_directory_found": "기존 데이터베이스를 찾았습니다:\n{}\n\n이 위치를 사용하시겠습니까?\n\n예 = 이 위치 사용\n아니요 = 다른 위치 선택\n취소 = 종료",
+  "db_directory_select_title": "데이터베이스용 폴더 선택"
 }

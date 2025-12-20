@@ -184,12 +184,8 @@ class CK3CharacterApp(tk.Tk):
             if os.path.exists(config_path):
                 # Database exists, ask if user wants to keep it or change
                 response = messagebox.askyesnocancel(
-                    "Directorio de Base de Datos",
-                    f"Se encontró una base de datos existente en:\n{os.path.abspath(default_dir)}\n\n"
-                    "¿Desea usar esta ubicación?\n\n"
-                    "Sí = Usar esta ubicación\n"
-                    "No = Seleccionar otra ubicación\n"
-                    "Cancelar = Salir",
+                    self.i18n.t("db_directory_title"),
+                    self.i18n.t("db_directory_found").format(os.path.abspath(default_dir)),
                     icon='question'
                 )
                 
@@ -202,8 +198,8 @@ class CK3CharacterApp(tk.Tk):
         
         # Ask user to select directory
         selected_dir = filedialog.askdirectory(
-            title="Seleccionar carpeta para bases de datos",
-            initialdir=os.path.dirname(os.path.abspath(__file__)),
+            title=self.i18n.t("db_directory_select_title"),
+            initialdir=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "databases"),
             mustexist=False
         )
         
@@ -360,11 +356,8 @@ class CK3CharacterApp(tk.Tk):
         search_section = tk.Frame(list_frame, bg="#3a3a3a")
         search_section.pack(fill="x", padx=5, pady=(5, 5))
         
-        # Search label and clear button
-        search_header = tk.Frame(search_section, bg="#3a3a3a")
-        search_header.pack(fill="x")
-        ttk.Label(search_header, text=f"{self.i18n.t('search')}:", background="#3a3a3a").pack(side="left")
-        ttk.Button(search_header, text=f"✕ {self.i18n.t('clear')}", command=self.clear_search, width=8).pack(side="right")
+        # Search label
+        ttk.Label(search_section, text=f"{self.i18n.t('search')}:", background="#3a3a3a").pack(fill="x")
         
         # Search type selector
         self.search_type_var = tk.StringVar(value="name")
@@ -375,13 +368,18 @@ class CK3CharacterApp(tk.Tk):
         ttk.Radiobutton(search_type_frame, text=self.i18n.t("by_tag"), variable=self.search_type_var, 
                        value="tag", command=self.on_search_type_change).pack(side="left")
         
-        # Search box with autocomplete
+        # Search box with clear button
+        search_box_frame = tk.Frame(search_section, bg="#3a3a3a")
+        search_box_frame.pack(fill="x")
+        
         self.search_var = tk.StringVar()
         self.search_var.trace_add("write", lambda *args: self.filter_characters())
-        self.search_combobox = ttk.Combobox(search_section, textvariable=self.search_var)
-        self.search_combobox.pack(fill="x")
+        self.search_combobox = ttk.Combobox(search_box_frame, textvariable=self.search_var)
+        self.search_combobox.pack(side="left", fill="x", expand=True, padx=(0, 5))
         self.search_combobox.bind('<Return>', lambda e: self.filter_characters())
         self.search_entry = self.search_combobox  # Mantener compatibilidad con código existente
+        
+        ttk.Button(search_box_frame, text="✕", command=self.clear_search, width=2).pack(side="left")
         
         # Character listbox
         list_container = tk.Frame(list_frame, bg="#3a3a3a")
@@ -599,7 +597,8 @@ class CK3CharacterApp(tk.Tk):
         """Export current gallery."""
         if not self.current_gallery_name:
             return
-        folder = filedialog.askdirectory(title=self.i18n.t("select_export_folder"))
+        databases_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "databases")
+        folder = filedialog.askdirectory(title=self.i18n.t("select_export_folder"), initialdir=databases_dir)
         if folder:
             if self.gallery_manager.export_gallery(self.current_gallery_name, folder):
                 messagebox.showinfo(self.i18n.t("success"), self.i18n.t("gallery_exported_to", folder=folder))
@@ -609,7 +608,8 @@ class CK3CharacterApp(tk.Tk):
     
     def import_gallery(self):
         """Import a gallery."""
-        folder = filedialog.askdirectory(title=self.i18n.t("select_gallery_folder"))
+        databases_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "databases")
+        folder = filedialog.askdirectory(title=self.i18n.t("select_gallery_folder"), initialdir=databases_dir)
         if folder:
             name = simpledialog.askstring(self.i18n.t("import_gallery"), self.i18n.t("enter_gallery_name"), parent=self)
             if name:
@@ -694,50 +694,87 @@ class CK3CharacterApp(tk.Tk):
         self.filter_characters()
     
     def filter_characters(self):
-        """Filter and display characters based on search term and search type."""
+        """Filter and display characters/CoAs based on search term and search type."""
         if not self.current_gallery_name:
             return
         
-        gallery = self.gallery_manager.get_gallery(self.current_gallery_name)
-        if not gallery:
-            return
-        
         self.char_listbox.delete(0, tk.END)
-        search_term = self.search_var.get().lower().strip()
-        search_type = self.search_type_var.get()
         
-        # Get sort preferences
-        sort_by = self.app_config.get("sort_by", "name")
-        sort_order = self.app_config.get("sort_order", "asc")
-        
-        # Filter characters
-        filtered_chars = []
-        
-        for char in gallery["characters"]:
-            name = char.get("name", "")
-            tags = char.get("tags", [])
+        if self.current_mode == "character":
+            # Character mode
+            gallery = self.gallery_manager.get_gallery(self.current_gallery_name)
+            if not gallery:
+                return
             
-            # If no search term, show all
-            if not search_term:
-                filtered_chars.append(char)
-                continue
+            search_term = self.search_var.get().lower().strip()
+            search_type = self.search_type_var.get()
             
-            # Search based on selected type
-            if search_type == "name":
-                # Search only in name
-                if search_term in name.lower():
+            # Get sort preferences
+            sort_by = self.app_config.get("sort_by", "name")
+            sort_order = self.app_config.get("sort_order", "asc")
+            
+            # Filter characters
+            filtered_chars = []
+            
+            for char in gallery["characters"]:
+                name = char.get("name", "")
+                tags = char.get("tags", [])
+                
+                # If no search term, show all
+                if not search_term:
                     filtered_chars.append(char)
-            else:  # search_type == "tag"
-                # Search only in tags
-                if any(search_term in tag.lower() for tag in tags):
-                    filtered_chars.append(char)
-        
-        # Sort characters
-        filtered_chars = self.sort_characters(filtered_chars, sort_by, sort_order)
-        
-        # Display sorted characters
-        for char in filtered_chars:
-            self.char_listbox.insert(tk.END, char.get("name", ""))
+                    continue
+                
+                # Search based on selected type
+                if search_type == "name":
+                    # Search only in name
+                    if search_term in name.lower():
+                        filtered_chars.append(char)
+                else:  # search_type == "tag"
+                    # Search only in tags
+                    if any(search_term in tag.lower() for tag in tags):
+                        filtered_chars.append(char)
+            
+            # Sort characters
+            filtered_chars = self.sort_characters(filtered_chars, sort_by, sort_order)
+            
+            # Display sorted characters
+            for char in filtered_chars:
+                self.char_listbox.insert(tk.END, char.get("name", ""))
+        else:
+            # CoA mode
+            gallery = self.coa_manager.get_gallery(self.current_gallery_name)
+            if not gallery:
+                return
+            
+            search_term = self.search_var.get().lower().strip()
+            search_type = self.search_type_var.get()
+            
+            # Filter CoAs
+            filtered_coas = []
+            
+            for coa in gallery.get("coats_of_arms", []):
+                coa_id = coa.get("id", "")
+                tags = coa.get("tags", [])
+                
+                # If no search term, show all
+                if not search_term:
+                    filtered_coas.append(coa)
+                    continue
+                
+                # Search based on selected type
+                if search_type == "name":
+                    # Search in ID
+                    if search_term in coa_id.lower():
+                        filtered_coas.append(coa)
+                else:  # search_type == "tag"
+                    # Search in tags
+                    if any(search_term in tag.lower() for tag in tags):
+                        filtered_coas.append(coa)
+            
+            # Display CoAs
+            for coa in filtered_coas:
+                self.char_listbox.insert(tk.END, coa.get("id", ""))
     
     def sort_characters(self, characters: list, sort_by: str, sort_order: str) -> list:
         """
@@ -767,21 +804,31 @@ class CK3CharacterApp(tk.Tk):
     # Character Management Methods
     
     def on_character_select(self, event=None):
-        """Handle character selection from list."""
+        """Handle character/CoA selection from list."""
         selection = self.char_listbox.curselection()
         if not selection:
             return
         
         idx = selection[0]
-        char_name = self.char_listbox.get(idx)
+        selected_name = self.char_listbox.get(idx)
         
-        gallery = self.gallery_manager.get_gallery(self.current_gallery_name)
-        if gallery:
-            for char in gallery["characters"]:
-                if char["name"] == char_name:
-                    self.current_character = char
-                    self.load_character(char)
-                    break
+        if self.current_mode == "character":
+            gallery = self.gallery_manager.get_gallery(self.current_gallery_name)
+            if gallery:
+                for char in gallery["characters"]:
+                    if char["name"] == selected_name:
+                        self.current_character = char
+                        self.load_character(char)
+                        break
+        else:
+            # CoA mode
+            gallery = self.coa_manager.get_gallery(self.current_gallery_name)
+            if gallery:
+                for coa in gallery.get("coats_of_arms", []):
+                    if coa["id"] == selected_name:
+                        self.current_coa = coa
+                        self.load_coa(coa)
+                        break
     
     def load_character(self, char: dict):
         """Load character data into UI."""
@@ -821,6 +868,41 @@ class CK3CharacterApp(tk.Tk):
         self.clear_portrait()
         self.dna_text.delete("1.0", tk.END)
         self.tags_text.delete("1.0", tk.END)
+        self.dirty = False
+    
+    def load_coa(self, coa: dict):
+        """Load coat of arms data into UI."""
+        # Load ID as name
+        self.name_var.set(coa.get("id", ""))
+        
+        # Load CoA code into DNA field
+        self.dna_text.delete("1.0", tk.END)
+        self.dna_text.insert("1.0", coa.get("code", ""))
+        
+        # Load tags
+        self.tags_text.delete("1.0", tk.END)
+        tags = coa.get("tags", [])
+        self.tags_text.insert("1.0", ", ".join(tags))
+        
+        # Load CoA image if available
+        if coa.get("has_image"):
+            img_path = self.coa_manager.get_image_file(coa.get("id", ""))
+            if os.path.exists(img_path):
+                try:
+                    img = Image.open(img_path)
+                    img = img.resize((450, 450), Image.Resampling.LANCZOS)
+                    self.portrait_photo = ImageTk.PhotoImage(img)
+                    
+                    if self.portrait_image_id:
+                        self.portrait_canvas.delete(self.portrait_image_id)
+                    self.portrait_image_id = self.portrait_canvas.create_image(225, 225, image=self.portrait_photo)
+                except Exception:
+                    self.clear_portrait()
+            else:
+                self.clear_portrait()
+        else:
+            self.clear_portrait()
+        
         self.dirty = False
     
     def clear_portrait(self):
@@ -1310,6 +1392,8 @@ class CK3CharacterApp(tk.Tk):
         if self.current_mode == "character":
             galleries = self.gallery_manager.get_gallery_names()
         else:
+            # Ensure CoA manager data is reloaded from disk
+            self.coa_manager.reload_from_disk()
             galleries = self.coa_manager.get_gallery_names()
         
         self.gallery_box['values'] = galleries + ["➕ New Gallery..."]

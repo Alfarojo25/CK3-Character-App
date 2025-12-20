@@ -303,5 +303,19 @@
   "settings_select_db_directory": "データベースディレクトリを選択",
   "settings_saved": "設定を保存しました",
   "settings_restart_required": "一部の変更を反映するには、アプリケーションの再起動が必要です。今すぐ再起動しますか？",
-  "settings_saved_message": "設定が正常に保存されました。"
+  "settings_saved_message": "設定が正常に保存されました。",
+  
+  "python_dependencies": "Python依存関係",
+  "python_checking_dependencies": "✅ Python依存関係を確認中...",
+  "python_all_dependencies_installed": "✅ すべての依存関係がインストールされています",
+  "python_missing_packages": "⚠️ 不足しているパッケージ:",
+  "python_installing_dependencies": "📦 不足している依存関係をインストール中...",
+  "python_dependencies_installed": "✅ 依存関係が正常にインストールされました",
+  "python_dependency_installation_failed": "❌ 依存関係のインストール中にエラーが発生しました:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "データベースディレクトリ",
+  "db_directory_found": "既存のデータベースが見つかりました:\n{}\n\nこの場所を使用しますか?\n\nはい = この場所を使用する\nいいえ = 別の場所を選択\nキャンセル = 終了",
+  "db_directory_select_title": "データベース用のフォルダを選択"
 }

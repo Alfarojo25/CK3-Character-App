@@ -303,5 +303,19 @@
   "settings_select_db_directory": "حدد دليل قاعدة البيانات",
   "settings_saved": "تم حفظ الإعدادات",
   "settings_restart_required": "تتطلب بعض التغييرات إعادة تشغيل التطبيق. إعادة التشغيل الآن؟",
-  "settings_saved_message": "تم حفظ الإعدادات بنجاح."
+  "settings_saved_message": "تم حفظ الإعدادات بنجاح.",
+  
+  "python_dependencies": "تبعيات Python",
+  "python_checking_dependencies": "✅ التحقق من تبعيات Python...",
+  "python_all_dependencies_installed": "✅ تم تثبيت جميع التبعيات",
+  "python_missing_packages": "⚠️ الحزم المفقودة:",
+  "python_installing_dependencies": "📦 تثبيت التبعيات المفقودة...",
+  "python_dependencies_installed": "✅ تم تثبيت التبعيات بنجاح",
+  "python_dependency_installation_failed": "❌ خطأ في تثبيت التبعيات:",
+  "quick_start_file": "QUICK_START.txt",
+  "spanish_start_file": "INICIO_RAPIDO.txt",
+  
+  "db_directory_title": "مجلد قاعدة البيانات",
+  "db_directory_found": "تم العثور على قاعدة بيانات موجودة في:\n{}\n\nهل تريد استخدام هذا الموقع?\n\nنعم = استخدم هذا الموقع\nلا = اختر موقع آخر\nإلغاء = خروج",
+  "db_directory_select_title": "حدد مجلد قواعس البيانات"
 }
