@@ -12,11 +12,23 @@ echo CK3 Character Manager - Python Verification
 echo ================================================
 echo.
 
+REM Refresh the system PATH
+set "PATH=%PATH%;C:\Program Files\Python314;C:\Program Files\Python313;C:\Program Files\Python312;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python314;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python312"
+
 REM Check if Python is installed
 python --version >nul 2>&1
 if %errorlevel% equ 0 (
     echo [OK] Python is installed!
     python --version
+    echo.
+    goto :eof
+)
+
+REM Try python3 as alternative
+python3 --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [OK] Python 3 is installed!
+    python3 --version
     echo.
     goto :eof
 )
