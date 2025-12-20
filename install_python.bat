@@ -1,6 +1,5 @@
 @echo off
 REM Script to verify and install Python for CK3 Character Manager
-REM This batch file checks if Python is installed, and if not, provides installation instructions
 
 setlocal enabledelayedexpansion
 
@@ -12,25 +11,55 @@ echo CK3 Character Manager - Python Verification
 echo ================================================
 echo.
 
-REM Refresh the system PATH
-set "PATH=%PATH%;C:\Program Files\Python314;C:\Program Files\Python313;C:\Program Files\Python312;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python314;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python312"
-
-REM Check if Python is installed by running a test script
-python -c "import sys; print('Python version:', sys.version)" >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [OK] Python is installed!
-    for /f "tokens=*" %%A in ('python --version 2^>^&1') do echo %%A
+REM Check if Python exists in common installation paths
+if exist "C:\Program Files\Python314\python.exe" (
+    echo [OK] Python 3.14 is installed!
+    "C:\Program Files\Python314\python.exe" --version
     echo.
     echo Press any key to continue...
     pause >nul
     goto :eof
 )
 
-REM Try python3 as alternative
-python3 -c "import sys; print('Python version:', sys.version)" >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [OK] Python 3 is installed!
-    for /f "tokens=*" %%A in ('python3 --version 2^>^&1') do echo %%A
+if exist "C:\Program Files\Python313\python.exe" (
+    echo [OK] Python 3.13 is installed!
+    "C:\Program Files\Python313\python.exe" --version
+    echo.
+    echo Press any key to continue...
+    pause >nul
+    goto :eof
+)
+
+if exist "C:\Program Files\Python312\python.exe" (
+    echo [OK] Python 3.12 is installed!
+    "C:\Program Files\Python312\python.exe" --version
+    echo.
+    echo Press any key to continue...
+    pause >nul
+    goto :eof
+)
+
+if exist "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python314\python.exe" (
+    echo [OK] Python 3.14 is installed!
+    "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python314\python.exe" --version
+    echo.
+    echo Press any key to continue...
+    pause >nul
+    goto :eof
+)
+
+if exist "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313\python.exe" (
+    echo [OK] Python 3.13 is installed!
+    "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313\python.exe" --version
+    echo.
+    echo Press any key to continue...
+    pause >nul
+    goto :eof
+)
+
+if exist "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python312\python.exe" (
+    echo [OK] Python 3.12 is installed!
+    "C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python312\python.exe" --version
     echo.
     echo Press any key to continue...
     pause >nul
