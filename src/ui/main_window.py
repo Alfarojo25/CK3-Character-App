@@ -505,8 +505,8 @@ class CK3CharacterApp(tk.Tk):
         self.bind_all("<Control-s>", lambda e: self.save_character())
         self.bind_all("<Control-n>", lambda e: self.new_character())
         self.bind_all("<Control-d>", lambda e: self.duplicate_dna_action())
-        # Only bind Ctrl+V to portrait canvas, not globally
-        self.portrait_canvas.bind("<Control-v>", lambda e: self.paste_portrait())
+        # Ctrl+Alt+V to paste portrait image from clipboard
+        self.bind_all("<Control-Alt-v>", lambda e: self.paste_portrait())
         self.bind_all("<Control-f>", lambda e: self.search_entry.focus_set())
         self.bind_all("<Control-c>", lambda e: self.copy_character())
         self.bind_all("<Delete>", lambda e: self.delete_character())

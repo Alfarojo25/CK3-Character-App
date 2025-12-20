@@ -61,7 +61,7 @@ CK3 Character & CoA Manager is a comprehensive desktop application that manages 
 - `Ctrl+N`: New character/CoA
 - `Ctrl+C`: Copy character/CoA
 - `Ctrl+D`: Duplicate DNA (Character mode only)
-- `Ctrl+V`: Paste portrait from clipboard
+- `Ctrl+Alt+V`: Paste portrait from clipboard
 - `Ctrl+F`: Focus search box
 - `Delete`: Delete selected item
 

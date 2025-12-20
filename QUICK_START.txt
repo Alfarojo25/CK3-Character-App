@@ -41,6 +41,18 @@ Option B (Using Terminal):
 4. Press Enter and wait for the application to start
 
 
+KEYBOARD SHORTCUTS
+─────────────────────────────────────────────────────────────────────────────
+
+Ctrl+S       - Save current character/CoA
+Ctrl+N       - New character/CoA
+Ctrl+D       - Duplicate DNA (Character mode only)
+Ctrl+Alt+V   - Paste portrait image from clipboard
+Ctrl+C       - Copy character/CoA
+Ctrl+F       - Focus search box
+Delete       - Delete selected item
+
+
 TROUBLESHOOTING
 ─────────────────────────────────────────────────────────────────────────────
 
@@ -137,6 +149,18 @@ Opción B (Usando terminal):
    python app.py
 
 4. Presiona Enter y espera a que la aplicación inicie
+
+
+ATAJOS DE TECLADO
+─────────────────────────────────────────────────────────────────────────────
+
+Ctrl+S       - Guardar personaje/CoA actual
+Ctrl+N       - Nuevo personaje/CoA
+Ctrl+D       - Duplicar DNA (solo en modo de personaje)
+Ctrl+Alt+V   - Pegar imagen de retrato desde portapapeles
+Ctrl+C       - Copiar personaje/CoA
+Ctrl+F       - Enfocar cuadro de búsqueda
+Suprimir     - Eliminar elemento seleccionado
 
 
 SOLUCIÓN DE PROBLEMAS
