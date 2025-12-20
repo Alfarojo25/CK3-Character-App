@@ -77,3 +77,7 @@ temp_clipboard.png
 
 # Configuration files
 config.json
+
+# Dependency files
+requirements.txt
+requirements-test.txt
