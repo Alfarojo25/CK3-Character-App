@@ -15,21 +15,25 @@ echo.
 REM Refresh the system PATH
 set "PATH=%PATH%;C:\Program Files\Python314;C:\Program Files\Python313;C:\Program Files\Python312;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python314;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313;C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python312"
 
-REM Check if Python is installed
-python --version >nul 2>&1
+REM Check if Python is installed by running a test script
+python -c "import sys; print('Python version:', sys.version)" >nul 2>&1
 if %errorlevel% equ 0 (
     echo [OK] Python is installed!
-    python --version
+    for /f "tokens=*" %%A in ('python --version 2^>^&1') do echo %%A
     echo.
+    echo Press any key to continue...
+    pause >nul
     goto :eof
 )
 
 REM Try python3 as alternative
-python3 --version >nul 2>&1
+python3 -c "import sys; print('Python version:', sys.version)" >nul 2>&1
 if %errorlevel% equ 0 (
     echo [OK] Python 3 is installed!
-    python3 --version
+    for /f "tokens=*" %%A in ('python3 --version 2^>^&1') do echo %%A
     echo.
+    echo Press any key to continue...
+    pause >nul
     goto :eof
 )
 
